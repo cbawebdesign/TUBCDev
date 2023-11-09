@@ -39,7 +39,7 @@ export default function DashboardDemo() {
         }
       >
         <Tile>
-          <Tile.Heading>DAOF I</Tile.Heading>
+          <Tile.Heading>New Customers</Tile.Heading>
 
           <Tile.Body>
             <div className={'flex justify-between'}>
@@ -52,7 +52,7 @@ export default function DashboardDemo() {
         </Tile>
 
         <Tile>
-          <Tile.Heading>DAOF II</Tile.Heading>
+          <Tile.Heading>Existing Customers</Tile.Heading>
 
           <Tile.Body>
             <div className={'flex justify-between'}>
@@ -65,7 +65,7 @@ export default function DashboardDemo() {
         </Tile>
 
         <Tile>
-          <Tile.Heading>DAF II</Tile.Heading>
+          <Tile.Heading>Outgoing Files</Tile.Heading>
 
           <Tile.Body>
             <div className={'flex justify-between'}>
@@ -78,7 +78,7 @@ export default function DashboardDemo() {
         </Tile>
 
         <Tile>
-          <Tile.Heading>DAF II - Cash Reconciliation</Tile.Heading>
+          <Tile.Heading>Incoming Files</Tile.Heading>
 
           <Tile.Body>
             <div className={'flex justify-between'}>
@@ -180,7 +180,7 @@ function UserGreetings() {
       <Heading type={4}>Welcome Back, {userDisplayName}</Heading>
 
       <p className={'text-gray-500 dark:text-gray-400'}>
-        <span>Here&apos;s what is happening across your Funds</span>
+        <span>Here&apos;s what is happening across your business</span>
       </p>
     </div>
   );
