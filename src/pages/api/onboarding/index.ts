@@ -20,8 +20,14 @@ async function onboardingHandler(req: NextApiRequest, res: NextApiResponse) {
 
   const data = {
     userId,
+    organizationlastName: body.organization,
     organizationName: body.organization,
-  };
+    organizationemail: body.organization,
+    organizationcontactnumber: body.organization,
+    organizationspouse: body.organization,
+    organizationdependants: body.organization,
+    organizationserviceMember: body.organization === 'true',
+    };
 
   await completeOnboarding(data);
 

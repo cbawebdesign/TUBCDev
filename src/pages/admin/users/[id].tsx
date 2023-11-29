@@ -112,7 +112,7 @@ function UserAdminPage({
               <TextField.Input
                 className={'max-w-sm'}
                 defaultValue={user.displayName ?? ''}
-                disabled
+                
               />
             </TextField.Label>
 

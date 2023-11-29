@@ -17,6 +17,20 @@ const NAVIGATION_CONFIG = {
         return <Cog8ToothIcon className={className} />;
       },
     },
+    {
+      label: 'common:settingsTabLabel',
+      path: '/search',
+      Icon: ({ className }: { className: string }) => {
+        return <Cog8ToothIcon className={className} />;
+      },
+    },
+    {
+      label: 'common:settingsTabLabel',
+      path: '/Add',
+      Icon: ({ className }: { className: string }) => {
+        return <Cog8ToothIcon className={className} />;
+      },
+    },
   ],
 };
 
