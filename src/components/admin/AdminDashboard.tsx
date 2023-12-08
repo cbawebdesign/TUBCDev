@@ -41,7 +41,7 @@ function AdminDashboard({
       </Tile>
 
       <Tile>
-        <Tile.Heading>Paying Customers</Tile.Heading>
+        <Tile.Heading>Active Customers</Tile.Heading>
 
         <Tile.Body>
           <div className={'flex justify-between'}>
@@ -51,7 +51,7 @@ function AdminDashboard({
       </Tile>
 
       <Tile>
-        <Tile.Heading>Trials</Tile.Heading>
+        <Tile.Heading>Inactive</Tile.Heading>
 
         <Tile.Body>
           <div className={'flex justify-between'}>

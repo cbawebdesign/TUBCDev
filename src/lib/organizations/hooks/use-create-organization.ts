@@ -39,7 +39,7 @@ export function useCreateOrganization() {
       try {
         setLoading(true);
 
-        const organizations = collection(firestore, ORGANIZATIONS_COLLECTION);
+        const organizations = collection(firestore, USERS_COLLECTION);
 
         const userDoc = doc(
           firestore,

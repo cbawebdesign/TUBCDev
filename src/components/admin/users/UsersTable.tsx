@@ -50,7 +50,7 @@ const columns: Array<ColumnDef<UserRow>> = [
       const user = row.original;
 
       const { photoURL, displayName, email, phoneNumber } = user;
-      const displayText = displayName || email || phoneNumber || '';
+      const displayText = displayName   || email || phoneNumber || '';
 
       return (
         <Tooltip>
@@ -106,6 +106,7 @@ const columns: Array<ColumnDef<UserRow>> = [
       return row.original.displayName ?? '';
     },
   },
+
   {
     header: 'Status',
     id: 'status',
@@ -130,7 +131,7 @@ const columns: Array<ColumnDef<UserRow>> = [
       const user = row.original;
 
       const displayName =
-        user.displayName || user.email || user.phoneNumber || user.uid;
+       user.displayName || user.email || user.phoneNumber || user.uid;
 
       return (
         <div className={'flex justify-end'}>

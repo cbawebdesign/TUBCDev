@@ -189,6 +189,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     displayName: user.displayName || '',
     photoURL: user.photoURL || '',
     disabled: user.disabled,
+
   };
 
   const organizations = await getOrganizationsForUser(user.uid);
