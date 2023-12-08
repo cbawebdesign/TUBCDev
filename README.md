@@ -1,3 +1,5 @@
 NPM RUN BUILD
 
 NPM RUN START
+
+test
