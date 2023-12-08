@@ -108,8 +108,10 @@
   "optionalDependencies": {
     "recharts": "^2.9.3"
   },
-  "resolutions": {
-    "cli-truncate": "2.0.0"
-  }
+  
+    "engines": {
+      "node": "16.x"
+    }
+  
   
 }
