@@ -45,13 +45,37 @@ import DisableUserModal from '~/components/admin/users/DisableUserModal';
 import ImpersonateUserModal from '~/components/admin/users/ImpersonateUserModal';
 import ReactivateUserModal from '~/components/admin/users/ReactivateUserModal';
 import RoleBadge from '~/components/organizations/RoleBadge';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+interface SearchResult {
+  union: string;
+  uid: string; // Add the 'uid' property
+  id:string;
+  spouse: string;
+  startdate: string;
+  LastName: string;
+  FirstName: string;
+  LM: string;
+  CurrentTotalPremium: string;
+  CaseNotes:string;
+  Status:string;
+  MarkifBW:string;
+  PreviousTotalPremium:string;
+  MM:string;
+  ChangeDate:string;
+  // Add other properties if necessary
+}
+
 
 function UserAdminPage({
   user,
   organizations,
+  unionData, // Access unionData from props
 }: React.PropsWithChildren<{
   user: UserRecord & {
     isDisabled: boolean;
+    isActive: boolean;
+    union:string;
   };
   organizations: Array<
     WithId<
@@ -60,10 +84,120 @@ function UserAdminPage({
       }
     >
   >;
+  unionData: any; // Define the type according to the structure of your data
 }>) {
   const displayName =
     user.displayName || user.email || user.phoneNumber || user.uid || '';
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
+    const [query, setQuery] = useState('');
+    const [activeFilter, setActiveFilter] = useState('');
+    const [unionFilter, setUnionFilter] = useState('');
+    const router = useRouter();
+    const [formFields, setFormFields] = useState({});
+    const [unionInput, setUnionInput] = useState('');
+    const [CaseNotesInput, setCaseNotesInput] = useState('');
+    const [CurrentTotalPremiumInput, setCurrentTotalPremiumInput] = useState('');
+    const [LMInput, setLMInput] = useState('');
+    const [MMInput, setMMInput] = useState('');
+    const [ChangeDateInput, setChangeDatenput] = useState('');
+    const [MarkifBWInput, setMarkifBWInput] = useState('');
+    const [PreviousTotalPremiumInput, setPreviousTotalPremiumInput] = useState('');
+    const [StatusInput, setStatusInput] = useState('');
+    const [FirstNameInput, setFirstNameInput] = useState('');
+    const [spouseInput, setSpouseInput] = useState('');
+    const [startDateInput, setStartDateInput] = useState('');
+    const [LastNameInput, setLastNameInput] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    useEffect(() => {
+      const fetchUsers = async () => {
+        const requestBody = {
+          query,
+          active: activeFilter,
+          union: unionFilter,
+          userId: user.uid, // Include the user's UID in the request
+        };
+        console.log("Search Request Body:", requestBody);
+    
+        try {
+          const response = await fetch('/api/search/search', { // Update the API endpoint
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          });
+    
+          if (response.ok) {
+            const users = await response.json();
+            console.log('API response:', users); // Log the API response
+
+            setSearchResults(users);
+            console.log('Search results:', users); // Log the search results
+
+          } else {
+            console.error('Search failed');
+          }
+        } catch (error) {
+          console.error('An error occurred during the search:', error);
+        }
+      };
+    
+      fetchUsers();
+    }, [query, activeFilter, unionFilter, user]);
+    useEffect(() => {
+      const currentUser = searchResults.find(result => result.id === user.uid);
+      console.log('Current user:', currentUser); // Log the current user
+
+      if (currentUser) {
+        setUnionInput(currentUser.union);
+        setCaseNotesInput(currentUser.CaseNotes);
+        setCurrentTotalPremiumInput(currentUser.CurrentTotalPremium);
+        setSpouseInput(currentUser.spouse);
+        setStartDateInput(currentUser.startdate);
+        setLastNameInput(currentUser.LastName);
+        setLMInput(currentUser.spouse);
+        setMMInput(currentUser.MM);
+        setChangeDatenput(currentUser.ChangeDate);
+        setMarkifBWInput(currentUser.MarkifBW);
+        setPreviousTotalPremiumInput(currentUser.PreviousTotalPremium);
+        setStatusInput(currentUser.Status);
+        setFirstNameInput(currentUser.FirstName);
+
+      }
+    }, [searchResults, user.uid]);
+    const updateUser = async (userId: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, startDate: string, LastName: string) => {
+      try {
+        const requestBody = {
+          union: union,
+          CaseNotes: CaseNotes,
+          spouse: spouse,
+          startdate: startDate,
+          LastName: LastName,
+          CurrentTotalPremium: CurrentTotalPremium,
+          LM:LM,
+          
+
+        };
+  
+        const response = await fetch(`/api/update-user/${userId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+  
+        if (response.ok) {
+          setSuccessMessage('User updated successfully!');
+                } else {
+          console.error('Update failed');
+        }
+      } catch (error) {
+        console.error('An error occurred while updating the user:', error);
+      }
+    };
+      
   return (
     <AdminRouteShell>
       <Head>
@@ -95,7 +229,7 @@ function UserAdminPage({
               </div>
 
               <div className={'inline-flex'}>
-                {user.disabled ? (
+                {user.isActive ? (
                   <Badge size={'small'} color={'error'}>
                     Disabled
                   </Badge>
@@ -116,14 +250,7 @@ function UserAdminPage({
               />
             </TextField.Label>
 
-            <TextField.Label>
-              Email
-              <TextField.Input
-                className={'max-w-sm'}
-                defaultValue={user.email ?? ''}
-                disabled
-              />
-            </TextField.Label>
+        
 
             <TextField.Label>
               Phone number
@@ -133,42 +260,117 @@ function UserAdminPage({
                 disabled
               />
             </TextField.Label>
+
+{searchResults.map((searchResult) => {
+  if (searchResult.id === user.uid) {
+    return (
+      <form 
+      key={searchResult.id} 
+      onSubmit={(e) => { 
+        e.preventDefault(); 
+        updateUser(searchResult.id, CaseNotesInput, CurrentTotalPremiumInput, LMInput, unionInput, spouseInput, startDateInput, LastNameInput); 
+      }}
+      style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
+    >
+      <div style={{ width: '30%' }}>
+        <TextField.Label>
+          Union
+          <TextField.Input
+            className={'max-w-sm'}
+            value={unionInput}
+            onChange={(e) => setUnionInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Spouse
+          <TextField.Input
+            className={'max-w-sm'}
+            value={spouseInput}
+            onChange={(e) => setSpouseInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          LM
+          <TextField.Input
+            className={'max-w-sm'}
+            value={LMInput}
+            onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+      </div>
+      <div style={{ width: '30%' }}>
+        <TextField.Label>
+          Start Date
+          <TextField.Input
+            className={'max-w-sm'}
+            value={startDateInput}
+            onChange={(e) => setStartDateInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Last Name
+          <TextField.Input
+            className={'max-w-sm'}
+            value={LastNameInput}
+            onChange={(e) => setLastNameInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          LM
+          <TextField.Input
+            className={'max-w-sm'}
+            value={LMInput}
+            onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+      </div>
+      <div style={{ width: '30%' }}>
+        <TextField.Label>
+          Case Notes
+          <TextField.Input
+            className={'max-w-sm'}
+            value={CaseNotesInput}
+            onChange={(e) => setCaseNotesInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Current Total Premium
+          <TextField.Input
+            className={'max-w-sm'}
+            value={CurrentTotalPremiumInput}
+            onChange={(e) => setCurrentTotalPremiumInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          LM
+          <TextField.Input
+            className={'max-w-sm'}
+            value={LMInput}
+            onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        
+      </div>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <Button style={{ marginTop: '20px', width: 'auto' }} type="submit">Update User</Button>
+  </div>    </form>
+    );
+  }
+  return null;
+})}
+
+{successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+
+
           </Tile>
-
-          <Tile>
-            <Heading type={4}>Organizations</Heading>
-
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Organization ID</TableHead>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Role</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {organizations.map((organization) => {
-                  return (
-                    <TableRow key={organization.id}>
-                      <TableCell>{organization.id}</TableCell>
-                      <TableCell>{organization.name}</TableCell>
-
-                      <TableCell>
-                        <div className={'inline-flex'}>
-                          <RoleBadge role={organization.role} />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Tile>
+       
+         
         </div>
       </div>
     </AdminRouteShell>
   );
 }
+
 
 export default UserAdminPage;
 
@@ -199,6 +401,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       ...adminProps.props,
       organizations,
       user: userProps,
+
     },
   };
 }

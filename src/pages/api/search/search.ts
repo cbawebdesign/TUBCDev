@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Only add 'where' clause if 'query' is not an empty string
     if (query !== '') {
-      queryBuilder = queryBuilder.where('name', '==', query);
+      queryBuilder = queryBuilder.where('Name', '==', query);
     }
 
     // Only add 'where' clause if 'union' is not an empty string
@@ -22,13 +22,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Only add 'where' clause if 'active' is not an empty string
     if (active !== '') {
       // Convert the string 'true' or 'false' to boolean
-      queryBuilder = queryBuilder.where('active', '==', active === 'true');
+      queryBuilder = queryBuilder.where('Active', '==', active === 'true');
+
     }
 
 
     try {
       const snapshot = await queryBuilder.get();
       const users = snapshot.docs.map((doc: { id: any; data: () => any; }) => ({ id: doc.id, ...doc.data() }));
+      console.log("API Response (with 'union' field):", users);
+
       res.status(200).json(users);
     } catch (error) {
       console.error('Error fetching users:', error);

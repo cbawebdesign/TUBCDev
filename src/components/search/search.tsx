@@ -12,8 +12,13 @@ interface User {
   reference: any;
   id: string;
   name: string;
-  email: string;
+  FirstName: string;
+  LastName:string;
+    email: string;
   union:string;
+  CaseNotes:string;
+  CurrentTotalPremium:string;
+  Active:boolean;
 }
 
 export default function SearchPage() {
@@ -63,68 +68,87 @@ export default function SearchPage() {
       <UserGreetings />
 
       <form onSubmit={(e) => e.preventDefault()} style={formContainerStyles}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search users by name..."
-          className={styles.inputField}
-        />
+  <input
+    type="text"
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    placeholder="Search users by name..."
+    className={styles.inputField}
+  />
 
-        <select
-          value={activeFilter}
-          onChange={(e) => setActiveFilter(e.target.value)}
-          className={styles.inputField}
-        >
-          <option value="">Select Active Status</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
+  <select
+    value={activeFilter}
+    onChange={(e) => setActiveFilter(e.target.value)}
+    className={styles.inputField}
+  >
+    <option value="">Select Active Status</option>
+    <option value="true">Active</option>
+    <option value="false">Inactive</option>
+  </select>
 
-        <select
-          value={unionFilter}
-          onChange={(e) => setUnionFilter(e.target.value)}
-          className={styles.inputField}
-        >
-          <option value="">Select Union</option>
-          <option value="coba">COBA</option>
-          <option value="L831">L831</option>
-        </select>
-      </form>
+  <select
+    value={unionFilter}
+    onChange={(e) => setUnionFilter(e.target.value)}
+    className={styles.inputField}
+  >
+    <option value="">Select Union</option>
+    <option value="coba">COBA</option>
+    <option value="L831">L831</option>
+  </select>
 
-      <div className={styles.tableContainer}>
-  <Table className={styles.table}>
-    <TableHead>
+  <button type="submit" className={styles.submitButton}>
+    Search
+  </button>
+</form>
+
+
+ 
+<div>
+<div className={styles.tableWrapper}>
+
+<div className={styles.table}>
+  {/* Second table code */}
+  <Table>
+    <TableHeader>
       <TableRow>
-        <TableHeader>Name</TableHeader>
-        <TableHeader>Email</TableHeader>
-        <TableHeader>ID</TableHeader>
-        <TableHeader>Union</TableHeader>
-        <TableHeader>Reference</TableHeader>
-        <TableHeader>Actions</TableHeader> {/* Added header for actions */}
+        <TableHead>First Name</TableHead>
+        <TableHead>Last Name</TableHead>
+        <TableHead>User ID</TableHead>
+        <TableHead>Union</TableHead>
+        <TableHead>Current Total Premium</TableHead>
+        <TableHead>Status</TableHead>
+
+
+        <TableHead>Actions</TableHead>
+
       </TableRow>
-    </TableHead>
+    </TableHeader>
     <TableBody>
-      {searchResults.map((user) => (
+    {searchResults.map((user) => (
         <TableRow key={user.id}>
-          <TableCell>{user.name}</TableCell>
-          <TableCell>{user.email}</TableCell>
+<TableCell>{user.FirstName}</TableCell>
+          <TableCell>{user.LastName}</TableCell>
+
           <TableCell>{user.id}</TableCell>
           <TableCell>{user.union}</TableCell>
-          <TableCell>{user.reference}</TableCell>
+          <TableCell>{user.CurrentTotalPremium}</TableCell>
+          <TableCell>{user.Active ? 'Active' : 'Inactive'}</TableCell>
+
           <TableCell>
             <Link href={`/admin/users/${user.id}`}>View user</Link>
           </TableCell>
+
+
         </TableRow>
       ))}
-    </TableBody>
+      </TableBody>
   </Table>
-</div>
+  </div>
+  </div>
     </div>
+  </div>
   );
-}
-
-
+    }
 function UserGreetings() {
   const user = useUserSession();
   const userDisplayName = user?.auth?.displayName ?? user?.auth?.email ?? '';

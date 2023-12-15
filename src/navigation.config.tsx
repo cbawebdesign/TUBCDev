@@ -12,14 +12,14 @@ const NAVIGATION_CONFIG = {
     },
     {
       label: 'common:settingsTabLabel',
-      path: '/admin',
+      path: '/settings',
       Icon: ({ className }: { className: string }) => {
         return <Cog8ToothIcon className={className} />;
       },
     },
     {
       label: 'common:searchLabel',
-      path: '/admin',
+      path: '/search',
       Icon: ({ className }: { className: string }) => {
         return <MagnifyingGlassPlusIcon        className={className} />;
       },
