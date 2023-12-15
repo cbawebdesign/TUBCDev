@@ -38,7 +38,9 @@ export default function EmbeddedStripeCheckout({
   onClose?: () => void;
 }>) {
   return (
-    
+    <EmbeddedCheckoutPopup key={clientSecret} onClose={onClose}>
+  
+    </EmbeddedCheckoutPopup>
   );
 }
 
