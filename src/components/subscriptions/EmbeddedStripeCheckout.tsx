@@ -38,14 +38,7 @@ export default function EmbeddedStripeCheckout({
   onClose?: () => void;
 }>) {
   return (
-    <EmbeddedCheckoutPopup key={clientSecret} onClose={onClose}>
-      <EmbeddedCheckoutProvider
-        stripe={stripePromise}
-        options={{ clientSecret }}
-      >
-        <EmbeddedCheckout className={'EmbeddedCheckoutClassName'} />
-      </EmbeddedCheckoutProvider>
-    </EmbeddedCheckoutPopup>
+    
   );
 }
 
