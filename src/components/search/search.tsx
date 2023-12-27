@@ -97,8 +97,8 @@ export default function SearchPage() {
   </select>
 
   <button type="submit" className={styles.submitButton}>
-    Search
-  </button>
+  Search
+</button>
 </form>
 
 
@@ -108,7 +108,7 @@ export default function SearchPage() {
 
 <div className={styles.table}>
   {/* Second table code */}
-  <Table>
+  <Table className={styles.table}>
     <TableHeader>
       <TableRow>
         <TableHead>First Name</TableHead>

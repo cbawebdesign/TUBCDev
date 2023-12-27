@@ -100,7 +100,7 @@ function UserAdminPage({
     const [CurrentTotalPremiumInput, setCurrentTotalPremiumInput] = useState('');
     const [LMInput, setLMInput] = useState('');
     const [MMInput, setMMInput] = useState('');
-    const [ChangeDateInput, setChangeDatenput] = useState('');
+    const [ChangeDateInput, setChangeDateInput] = useState('');
     const [MarkifBWInput, setMarkifBWInput] = useState('');
     const [PreviousTotalPremiumInput, setPreviousTotalPremiumInput] = useState('');
     const [StatusInput, setStatusInput] = useState('');
@@ -158,7 +158,7 @@ function UserAdminPage({
         setLastNameInput(currentUser.LastName);
         setLMInput(currentUser.spouse);
         setMMInput(currentUser.MM);
-        setChangeDatenput(currentUser.ChangeDate);
+        setChangeDateInput(currentUser.ChangeDate);
         setMarkifBWInput(currentUser.MarkifBW);
         setPreviousTotalPremiumInput(currentUser.PreviousTotalPremium);
         setStatusInput(currentUser.Status);
@@ -273,14 +273,15 @@ function UserAdminPage({
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
       <div style={{ width: '30%' }}>
-        <TextField.Label>
-          Union
+      <TextField.Label>
+          First Name
           <TextField.Input
             className={'max-w-sm'}
-            value={unionInput}
-            onChange={(e) => setUnionInput((e.target as HTMLInputElement).value)}
+            value={FirstNameInput}
+            onChange={(e) => setFirstNameInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
+     
         <TextField.Label>
           Spouse
           <TextField.Input
@@ -290,23 +291,32 @@ function UserAdminPage({
           />
         </TextField.Label>
         <TextField.Label>
-          LM
+          Union
           <TextField.Input
             className={'max-w-sm'}
-            value={LMInput}
-            onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
+            value={unionInput}
+            onChange={(e) => setUnionInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Change Date
+          <TextField.Input
+            className={'max-w-sm'}
+            value={ChangeDateInput}
+            onChange={(e) => setChangeDateInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          MarkifBW
+          <TextField.Input
+            className={'max-w-sm'}
+            value={MarkifBWInput}
+            onChange={(e) => setMarkifBWInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
       </div>
       <div style={{ width: '30%' }}>
-        <TextField.Label>
-          Start Date
-          <TextField.Input
-            className={'max-w-sm'}
-            value={startDateInput}
-            onChange={(e) => setStartDateInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
+       
         <TextField.Label>
           Last Name
           <TextField.Input
@@ -316,6 +326,14 @@ function UserAdminPage({
           />
         </TextField.Label>
         <TextField.Label>
+          Start Date
+          <TextField.Input
+            className={'max-w-sm'}
+            value={startDateInput}
+            onChange={(e) => setStartDateInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
           LM
           <TextField.Input
             className={'max-w-sm'}
@@ -323,6 +341,15 @@ function UserAdminPage({
             onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
+        <TextField.Label>
+          MM
+          <TextField.Input
+            className={'max-w-sm'}
+            value={MMInput}
+            onChange={(e) => setMMInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+      
       </div>
       <div style={{ width: '30%' }}>
         <TextField.Label>
@@ -342,11 +369,19 @@ function UserAdminPage({
           />
         </TextField.Label>
         <TextField.Label>
-          LM
+          Previous Total Premium
           <TextField.Input
             className={'max-w-sm'}
-            value={LMInput}
-            onChange={(e) => setLMInput((e.target as HTMLInputElement).value)}
+            value={PreviousTotalPremiumInput}
+            onChange={(e) => setPreviousTotalPremiumInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Status
+          <TextField.Input
+            className={'max-w-sm'}
+            value={StatusInput}
+            onChange={(e) => setStatusInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
         
