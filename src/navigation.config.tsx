@@ -1,5 +1,5 @@
 import configuration from '~/configuration';
-import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon } from '@heroicons/react/24/outline';
+import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon } from '@heroicons/react/24/outline';
 
 const NAVIGATION_CONFIG = {
   items: [
@@ -22,6 +22,13 @@ const NAVIGATION_CONFIG = {
       path: '/search',
       Icon: ({ className }: { className: string }) => {
         return <MagnifyingGlassPlusIcon        className={className} />;
+      },
+    },
+    {
+      label: 'common:reportsLabel',
+      path: '/dataview',
+      Icon: ({ className }: { className: string }) => {
+        return <ArchiveBoxArrowDownIcon        className={className} />;
       },
     },
     {

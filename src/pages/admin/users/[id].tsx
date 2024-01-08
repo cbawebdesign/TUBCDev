@@ -63,6 +63,11 @@ interface SearchResult {
   PreviousTotalPremium:string;
   MM:string;
   ChangeDate:string;
+  current_deduction:string;
+  premium_date: {
+    date: string;
+    premium: number;
+  }[];
   // Add other properties if necessary
 }
 
@@ -349,9 +354,13 @@ function UserAdminPage({
             onChange={(e) => setMMInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
-      
+        
+
+  {/* ... other TextField.Labels ... */}
+
       </div>
-      <div style={{ width: '30%' }}>
+     
+      <div style={{ width: '30%', marginBottom: '20px' }}>
         <TextField.Label>
           Case Notes
           <TextField.Input
@@ -384,8 +393,33 @@ function UserAdminPage({
             onChange={(e) => setStatusInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
+        <TextField.Label>
+  Current NY Deduction
+  <TextField.Input
+    className={'max-w-sm'}
+    value={searchResult.current_deduction}
+    readOnly
+  />
+</TextField.Label>
         
       </div>
+      <br></br>
+      <br></br>
+      <div style={{ width: '100%' }}>
+  <h2>Premium History</h2>
+  {searchResult.premium_date.map((premiumDate, index) => (
+    <div key={index} style={{ marginBottom: '20px', width: '30%' }}>
+      <TextField.Label>
+
+        <TextField.Input
+          className={'w-full'}
+          value={`Date: ${premiumDate.date}, Premium: ${premiumDate.premium}`}
+          readOnly
+        />
+      </TextField.Label>
+    </div>
+  ))}
+</div>
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
     <Button style={{ marginTop: '20px', width: 'auto' }} type="submit">Update User</Button>
   </div>    </form>

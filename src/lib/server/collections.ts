@@ -11,6 +11,7 @@ import {
   ORGANIZATIONS_COLLECTION,
   USERS_COLLECTION,
   INVITES_COLLECTION,
+  DOCUMENTS_COLLECTION,
 } from '~/lib/firestore-collections';
 
 import getRestFirestore from '~/core/firebase/admin/get-rest-firestore';
@@ -18,7 +19,9 @@ import getRestFirestore from '~/core/firebase/admin/get-rest-firestore';
 export function getUsersCollection() {
   return getCollectionByName(USERS_COLLECTION) as CollectionReference<UserData>;
 }
-
+export function getDocumentsCollection() {
+  return getCollectionByName(DOCUMENTS_COLLECTION);
+}
 export function getOrganizationsCollection() {
   return getCollectionByName(
     ORGANIZATIONS_COLLECTION
