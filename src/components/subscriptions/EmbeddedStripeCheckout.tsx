@@ -41,7 +41,7 @@ export default function EmbeddedStripeCheckout({
     <EmbeddedCheckoutPopup key={clientSecret} onClose={onClose}>
      
         <EmbeddedCheckout className={'EmbeddedCheckoutClassName'} />
-      </EmbeddedCheckoutProvider>
+   
     </EmbeddedCheckoutPopup>
   );
 }
