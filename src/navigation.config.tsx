@@ -41,7 +41,7 @@ const NAVIGATION_CONFIG = {
     },
     {
       label: 'common:NYLabel',
-      path: '/admin',
+      path: '/nystate',
       Icon: ({ className }: { className: string }) => {
         return <CodeBracketSquareIcon className={className} />;
       },

@@ -3,6 +3,7 @@ import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import Head from 'next/head';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 import {
   ChevronRightIcon,
@@ -47,6 +48,7 @@ import ReactivateUserModal from '~/components/admin/users/ReactivateUserModal';
 import RoleBadge from '~/components/organizations/RoleBadge';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+
 interface SearchResult {
   union: string;
   uid: string; // Add the 'uid' property
@@ -62,6 +64,11 @@ interface SearchResult {
   MarkifBW:string;
   PreviousTotalPremium:string;
   MM:string;
+  Files: {
+    title: string;
+    date: string;
+    url: string;
+  }[];
   ChangeDate:string;
   current_deduction:string;
   premium_date: {
@@ -91,6 +98,7 @@ function UserAdminPage({
   >;
   unionData: any; // Define the type according to the structure of your data
 }>) {
+  const [file, setFile] = useState<File | null>(null);
   const displayName =
     user.displayName || user.email || user.phoneNumber || user.uid || '';
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -123,7 +131,7 @@ function UserAdminPage({
           userId: user.uid, // Include the user's UID in the request
         };
         console.log("Search Request Body:", requestBody);
-    
+        console.log(searchResults.map(result => result.Files));
         try {
           const response = await fetch('/api/search/search', { // Update the API endpoint
             method: 'POST',
@@ -202,7 +210,53 @@ function UserAdminPage({
         console.error('An error occurred while updating the user:', error);
       }
     };
-      
+
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        setFile(e.target.files[0]);
+      }
+    };
+    const handleUpload = async () => {
+      if (file) {
+        const storage = getStorage();
+        const storageRef = ref(storage, 'userdocuments/' + file.name);
+    
+        const uploadTask = uploadBytesResumable(storageRef, file);
+    
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+          }, 
+          (error) => {
+            console.log(error);
+          }, 
+          async () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+              console.log('File available at', downloadURL);
+    
+              // Make a request to your API to update the user document
+              const response = await fetch('/api/setdocument/setdocument', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  uid: user.uid,
+                  avatarURL: downloadURL,
+                  fileName: file.name,
+                }),
+              });
+    
+              const data = await response.json();
+              console.log(data);
+            });
+          }
+        );
+      }
+    };
+
   return (
     <AdminRouteShell>
       <Head>
@@ -255,7 +309,10 @@ function UserAdminPage({
               />
             </TextField.Label>
 
-        
+        <div>
+        <input type="file" onChange={handleFileChange} />
+        <button onClick={handleUpload}>Upload</button>
+        </div>
 
             <TextField.Label>
               Phone number
@@ -420,6 +477,39 @@ function UserAdminPage({
     </div>
   ))}
 </div>
+<div>
+<h2>Uploaded Files</h2>
+{searchResults.map((searchResult) => {
+  if (searchResult.id === user.uid) {
+    return (
+      <form 
+        key={searchResult.id} 
+        onSubmit={(e) => { 
+          e.preventDefault(); 
+          // your submit logic...
+        }}
+        style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
+      >
+        {searchResult.Files.map((file, index) => (
+          <div key={index} style={{ marginBottom: '20px', width: '100%' }}>
+            <label>
+              Title: <input type="text" value={file.title} readOnly style={{ width: '100%' }} />
+            </label>
+            <label>
+              Date: <input type="text" value={file.date} readOnly style={{ width: '100%' }} />
+            </label>
+            <label>
+              URL: <a href={file.url} download style={{ display: 'inline-block', padding: '10px', backgroundColor: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}>Download File</a>
+            </label>
+          </div>
+        ))}
+        {/* rest of your form fields... */}
+      </form>
+    );
+  }
+})}
+</div>
+
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
     <Button style={{ marginTop: '20px', width: 'auto' }} type="submit">Update User</Button>
   </div>    </form>
