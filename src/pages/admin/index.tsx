@@ -73,7 +73,7 @@ async function loadData() {
     .get();
     const cobaResponse = await firestore
     .collection(USERS_COLLECTION)
-    .where('union', '==', 'coba') // Compare to boolean true
+    .where('union', '==', 'COBA') // Compare to boolean true
 
     .count()
     .get();

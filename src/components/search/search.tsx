@@ -92,7 +92,7 @@ export default function SearchPage() {
     className={styles.inputField}
   >
     <option value="">Select Union</option>
-    <option value="coba">COBA</option>
+    <option value="COBA">COBA</option>
     <option value="L831">L831</option>
   </select>
 
