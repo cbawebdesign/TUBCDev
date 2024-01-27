@@ -102,7 +102,7 @@ function UserAdminPage({
   const displayName =
     user.displayName || user.email || user.phoneNumber || user.uid || '';
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [query, setQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('');
     const [unionFilter, setUnionFilter] = useState('');
@@ -122,6 +122,9 @@ function UserAdminPage({
     const [startDateInput, setStartDateInput] = useState('');
     const [LastNameInput, setLastNameInput] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+
     useEffect(() => {
       const fetchUsers = async () => {
         const requestBody = {
@@ -228,6 +231,7 @@ function UserAdminPage({
           (snapshot) => {
             var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             console.log('Upload is ' + progress + '% done');
+            setUploadProgress(progress); // Update the progress state
           }, 
           (error) => {
             console.log(error);
@@ -251,12 +255,12 @@ function UserAdminPage({
     
               const data = await response.json();
               console.log(data);
+              setUploadSuccess(true); // Set the upload success state to true
             });
           }
         );
       }
     };
-
   return (
     <AdminRouteShell>
       <Head>
@@ -309,10 +313,19 @@ function UserAdminPage({
               />
             </TextField.Label>
 
-        <div>
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleUpload}>Upload</button>
-        </div>
+           
+  
+            <div className="space-y-4 max-w-md mx-auto">
+  <input type="file" onChange={handleFileChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+  <button onClick={handleUpload} className="w-full px-3 py-2 bg-blue-500 text-white rounded-md">Upload</button>
+  <div className="relative pt-1">
+    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
+      <div style={{ width: `${uploadProgress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
+    </div>
+  </div>
+  {uploadSuccess && <p className="text-green-500">Upload successful!</p>}
+</div>
+
 
             <TextField.Label>
               Phone number
@@ -462,12 +475,11 @@ function UserAdminPage({
       </div>
       <br></br>
       <br></br>
-      <div style={{ width: '100%' }}>
-  <h2>Premium History</h2>
-  {searchResult.premium_date.map((premiumDate, index) => (
-    <div key={index} style={{ marginBottom: '20px', width: '30%' }}>
+      <div className="w-full lg:w-64">
+  <h2 className="text-2xl font-bold mb-4">Premium History</h2>
+  {searchResult.premium_date.slice(0, showAll ? searchResult.premium_date.length : 1).map((premiumDate, index) => (
+    <div key={index} className="mb-5 w-full">
       <TextField.Label>
-
         <TextField.Input
           className={'w-full'}
           value={`Date: ${premiumDate.date}, Premium: ${premiumDate.premium}`}
@@ -476,38 +488,47 @@ function UserAdminPage({
       </TextField.Label>
     </div>
   ))}
+  {searchResult.premium_date.length > 1 && (
+    <button onClick={() => setShowAll(!showAll)}>
+      {showAll ? 'Show Less' : 'Show More'}
+    </button>
+  )}
 </div>
-<div>
-<h2>Uploaded Files</h2>
-{searchResults.map((searchResult) => {
-  if (searchResult.id === user.uid) {
-    return (
-      <form 
-        key={searchResult.id} 
-        onSubmit={(e) => { 
-          e.preventDefault(); 
-          // your submit logic...
-        }}
-        style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
-      >
-        {searchResult.Files.map((file, index) => (
-          <div key={index} style={{ marginBottom: '20px', width: '100%' }}>
-            <label>
-              Title: <input type="text" value={file.title} readOnly style={{ width: '100%' }} />
-            </label>
-            <label>
-              Date: <input type="text" value={file.date} readOnly style={{ width: '100%' }} />
-            </label>
-            <label>
-              URL: <a href={file.url} download style={{ display: 'inline-block', padding: '10px', backgroundColor: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}>Download File</a>
-            </label>
-          </div>
-        ))}
-        {/* rest of your form fields... */}
-      </form>
-    );
-  }
-})}
+<hr className="my-8" />
+<div className="w-full lg:w-2/3">
+  <h2 className="text-2xl font-bold mb-4">Uploaded Files</h2>
+  {searchResults.map((searchResult) => {
+    if (searchResult.id === user.uid) {
+      return (
+        <form 
+          key={searchResult.id} 
+          onSubmit={(e) => { 
+            e.preventDefault(); 
+            // your submit logic...
+          }}
+          className="space-y-4"
+        >
+          {searchResult.Files.map((file, index) => (
+            <div key={index} className="border p-4 rounded-md space-y-2 max-w-lg">
+              <label className="block">
+                <span className="text-gray-700">Title:</span>
+                <input type="text" value={file.title} readOnly className="mt-1 block w-full rounded-md border-gray-300" />
+              </label>
+              <label className="block">
+                <span className="text-gray-700">Date:</span>
+                <input type="text" value={file.date} readOnly className="mt-1 block w-full rounded-md border-gray-300" />
+              </label>
+              <label className="block">
+                <span className="text-gray-700">URL:</span>
+                <a href={file.url} download className="mt-1 inline-block px-4 py-2 bg-blue-500 text-white rounded-md">Download File</a>
+              </label>
+            </div>
+          ))}
+          {/* rest of your form fields... */}
+        </form>
+      );
+    }
+  })}
 </div>
 
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
