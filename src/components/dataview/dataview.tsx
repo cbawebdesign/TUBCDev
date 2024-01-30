@@ -56,44 +56,56 @@ const COBADocuments = documents
       <p>ADMIN REPORTS</p>
   
       <div className={'mb-8'}>
-        <h2 className={'mb-4'}>L831 Documents</h2>
-        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-          {L831Documents.map((document, index) => (
-            <div key={index} className="flex flex-col">
-              <Tile className="flex-grow">
-              <div className="tile-heading">
-  <Tile.Heading>{document.title}</Tile.Heading>
-</div>              
-                <Tile.Body>
-                  <a href={document.URL} download>
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded">Download</button>
-                  </a>
-                </Tile.Body>
-              </Tile>
+  <h2 className={'mb-4'}>L831 Documents</h2>
+  <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+    {L831Documents.map((document, index) => (
+      <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
+        <Tile className="flex-grow">
+          <div className="text-center font-bold text-sm mb-2">
+            <div className="text-sm">
+              <Tile.Heading>{document.title}</Tile.Heading>
             </div>
-          ))}
-        </div>
+          </div>
+          <div className="px-6 py-4">
+            <Tile.Body>
+              <a href={document.URL} download>
+                <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  Download
+                </button>
+              </a>
+            </Tile.Body>
+          </div>
+        </Tile>
       </div>
-  
-      <div className={'mb-8'}>
-        <h2 className={'mb-4'}>COBA Documents</h2>
-        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-          {COBADocuments.map((document, index) => (
-            <div key={index} className="flex flex-col">
-              <Tile className="flex-grow">
-              <div className="tile-heading">
-  <Tile.Heading>{document.title}</Tile.Heading>
+    ))}
+  </div>
 </div>
- <Tile.Body>
-                  <a href={document.URL} download>
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded">Download</button>
-                  </a>
-                </Tile.Body>
-              </Tile>
+
+<div className={'mb-8'}>
+  <h2 className={'mb-4'}>COBA Documents</h2>
+  <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+    {COBADocuments.map((document, index) => (
+      <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
+        <Tile className="flex-grow">
+          <div className="text-center font-bold text-sm mb-2">
+            <div className="text-sm">
+              <Tile.Heading>{document.title}</Tile.Heading>
             </div>
-          ))}
-        </div>
+          </div>
+          <div className="px-6 py-4">
+            <Tile.Body>
+              <a href={document.URL} download>
+                <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                  Download
+                </button>
+              </a>
+            </Tile.Body>
+          </div>
+        </Tile>
       </div>
+    ))}
+  </div>
+</div>
     </div>
   );
 function UserGreetings() {
