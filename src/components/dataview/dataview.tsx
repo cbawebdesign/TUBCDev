@@ -33,37 +33,69 @@ export default function DataviewPage() {
       .then(response => response.json())
       .then(setDocuments);
   }, []);
+  const L831Documents = documents
+  .filter(document => document.title.includes('L831'))
+  .sort((a, b) => {
+    const dateA = new Date(a.title.split(" ").pop() || "");
+    const dateB = new Date(b.title.split(" ").pop() || "");
+    return dateB.getTime() - dateA.getTime();
+  });
+
+const COBADocuments = documents
+  .filter(document => document.title.includes('COBA'))
+  .sort((a, b) => {
+    const dateA = new Date(a.title.split(" ").pop() || "");
+    const dateB = new Date(b.title.split(" ").pop() || "");
+    return dateB.getTime() - dateA.getTime();
+  });
+
 
   return (
     <div className={'flex flex-col space-y-6 pb-36'}>
       <UserGreetings />
       <p>ADMIN REPORTS</p>
   
-      <div
-        className={
-          'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3' +
-          ' xl:grid-cols-4'
-        }
-      >
-        {documents.map((document, index) => (
-          <div key={index}>
-            <Tile>
-              <Tile.Heading>{document.title}</Tile.Heading>
+      <div className={'mb-8'}>
+        <h2 className={'mb-4'}>L831 Documents</h2>
+        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+          {L831Documents.map((document, index) => (
+            <div key={index} className="flex flex-col">
+              <Tile className="flex-grow">
+              <div className="tile-heading">
+  <Tile.Heading>{document.title}</Tile.Heading>
+</div>              
+                <Tile.Body>
+                  <a href={document.URL} download>
+                    <button className="px-4 py-2 bg-blue-500 text-white rounded">Download</button>
+                  </a>
+                </Tile.Body>
+              </Tile>
+            </div>
+          ))}
+        </div>
+      </div>
   
-              <Tile.Body>
-                <a href={document.URL} download>
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded">Download</button>
-                </a>
-              </Tile.Body>
-            </Tile>
-          </div>
-        ))}
-  
-     </div>
-     </div>
+      <div className={'mb-8'}>
+        <h2 className={'mb-4'}>COBA Documents</h2>
+        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+          {COBADocuments.map((document, index) => (
+            <div key={index} className="flex flex-col">
+              <Tile className="flex-grow">
+              <div className="tile-heading">
+  <Tile.Heading>{document.title}</Tile.Heading>
+</div>
+ <Tile.Body>
+                  <a href={document.URL} download>
+                    <button className="px-4 py-2 bg-blue-500 text-white rounded">Download</button>
+                  </a>
+                </Tile.Body>
+              </Tile>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
-}
-
 function UserGreetings() {
   const user = useUserSession();
   const userDisplayName = user?.auth?.displayName ?? user?.auth?.email ?? '';
@@ -187,4 +219,5 @@ function CustomersTable() {
       </TableBody>
     </Table>
   );
+}
 }

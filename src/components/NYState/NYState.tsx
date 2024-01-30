@@ -27,49 +27,88 @@ export default function NYStatePage() {
   const tickets = useMemo(() => generateDemoData(), []);
   const activeUsers = useMemo(() => generateDemoData(), []);
   const [documents, setDocuments] = useState<Document[]>([]);
-
+  
+  
   useEffect(() => {
     fetch('/api/datatwo/datatwo')
       .then(response => response.json())
       .then(setDocuments);
   }, []);
+  const L831Documents = documents
+  .filter(document => document.title.includes('L831'))
+  .sort((a, b) => {
+    const dateA = new Date(a.title.split(" ").pop() || "");
+    const dateB = new Date(b.title.split(" ").pop() || "");
+    return dateB.getTime() - dateA.getTime();
+  });
 
+const COBADocuments = documents
+  .filter(document => document.title.includes('COBA'))
+  .sort((a, b) => {
+    const dateA = new Date(a.title.split(" ").pop() || "");
+    const dateB = new Date(b.title.split(" ").pop() || "");
+    return dateB.getTime() - dateA.getTime();
+  });
   return (
     <div className={'flex flex-col space-y-6 pb-36'}>
       <UserGreetings />
       <p>ADMIN REPORTS</p>
   
-      <div
-        className={
-          'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3' +
-          ' xl:grid-cols-4'
-        }
-      >
-{documents.map((document, index) => (
-  <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
-    <Tile>
-      <div className="text-center font-bold text-sm mb-2">
-        <div className="text-sm">
-          <Tile.Heading>{document.title}</Tile.Heading>
+      <div className={'mb-8'}>
+        <h2 className={'mb-4'}>L831 Documents</h2>
+        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+          {L831Documents.map((document, index) => (
+            <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
+              <Tile>
+                <div className="text-center font-bold text-sm mb-2">
+                  <div className="text-sm">
+                    <Tile.Heading>{document.title}</Tile.Heading>
+                  </div>
+                </div>
+  
+                <div className="px-6 py-4">
+                  <Tile.Body>
+                    <a href={document.URL} download>
+                      <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Download
+                      </button>
+                    </a>
+                  </Tile.Body>
+                </div>
+              </Tile>
+            </div>
+          ))}
         </div>
       </div>
-
-      <div className="px-6 py-4">
-        <Tile.Body>
-          <a href={document.URL} download>
-            <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Download
-            </button>
-          </a>
-        </Tile.Body>
+  
+      <div className={'mb-8'}>
+        <h2 className={'mb-4'}>COBA Documents</h2>
+        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
+          {COBADocuments.map((document, index) => (
+            <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
+              <Tile>
+                <div className="text-center font-bold text-sm mb-2">
+                  <div className="text-sm">
+                    <Tile.Heading>{document.title}</Tile.Heading>
+                  </div>
+                </div>
+  
+                <div className="px-6 py-4">
+                  <Tile.Body>
+                    <a href={document.URL} download>
+                      <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Download
+                      </button>
+                    </a>
+                  </Tile.Body>
+                </div>
+              </Tile>
+            </div>
+          ))}
+        </div>
       </div>
-    </Tile>
-  </div>
-))}
-     </div>
-     </div>
+    </div>
   );
-}
 
 function UserGreetings() {
   const user = useUserSession();
@@ -194,4 +233,5 @@ function CustomersTable() {
       </TableBody>
     </Table>
   );
+  }
 }
