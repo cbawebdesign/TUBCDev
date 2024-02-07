@@ -5,7 +5,6 @@ import { withAppProps } from '~/lib/props/with-app-props';
 import RouteShell from '~/components/RouteShell';
 
 const SearchPage = dynamic(
-  () => import('~/components/search/search'),
   {
     ssr: false,
   }
