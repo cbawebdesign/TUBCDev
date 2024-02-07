@@ -23,8 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
         res.status(200).json({ message: 'User updated successfully' });
       } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error updating user:', (error as Error).message);
+        res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });
       }
     } else {
       res.status(405).end('Method Not Allowed');
