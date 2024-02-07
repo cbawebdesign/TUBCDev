@@ -5,7 +5,7 @@ import { getUsersCollection } from 'src/lib/server/collections';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { query, union, active } = req.body;
+    const { query, union, active, limit = 20 } = req.body;
     
     let queryBuilder: any = getUsersCollection();
 
@@ -23,14 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (active !== '') {
       // Convert the string 'true' or 'false' to boolean
       queryBuilder = queryBuilder.where('Active', '==', active === 'true');
-
     }
 
+    // Always add 'limit' to the query
+    queryBuilder = queryBuilder.limit(limit);
 
     try {
       const snapshot = await queryBuilder.get();
       const users = snapshot.docs.map((doc: { id: any; data: () => any; }) => ({ id: doc.id, ...doc.data() }));
-      console.log("API Response (with 'union' field):", users);
 
       res.status(200).json(users);
     } catch (error) {
