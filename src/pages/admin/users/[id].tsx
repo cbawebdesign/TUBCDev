@@ -182,7 +182,7 @@ function UserAdminPage({
 
       }
     }, [searchResults, user.uid]);
-    const updateUser = async (userId: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, startDate: string, LastName: string) => {
+    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, startDate: string, LastName: string) => {
       try {
         const requestBody = {
           union: union,
@@ -192,11 +192,14 @@ function UserAdminPage({
           LastName: LastName,
           CurrentTotalPremium: CurrentTotalPremium,
           LM:LM,
+          Status: Status,
+          uid: uid,
           
 
         };
-  
-        const response = await fetch(`/api/update-user/${userId}`, {
+        console.log('Updating user with ID:', user.uid);
+
+        const response = await fetch(`/api/update-user/${user.uid}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -343,7 +346,7 @@ function UserAdminPage({
       key={searchResult.id} 
       onSubmit={(e) => { 
         e.preventDefault(); 
-        updateUser(searchResult.id, CaseNotesInput, CurrentTotalPremiumInput, LMInput, unionInput, spouseInput, startDateInput, LastNameInput); 
+        updateUser(StatusInput,searchResult.id,CaseNotesInput, CurrentTotalPremiumInput, LMInput, unionInput, spouseInput, startDateInput, LastNameInput); 
       }}
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
@@ -456,13 +459,29 @@ function UserAdminPage({
           />
         </TextField.Label>
         <TextField.Label>
-          Status
-          <TextField.Input
-            className={'max-w-sm'}
-            value={StatusInput}
-            onChange={(e) => setStatusInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
+  Status
+  <div className="relative inline-block w-full text-gray-700">
+    <select
+      className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
+      value={StatusInput}
+      onChange={(e) => setStatusInput((e.target as HTMLSelectElement).value)}
+    >
+      <option value="Termed">Termed</option>
+      <option value="Retired">Retired</option>
+      <option value="On Leave">On Leave</option>
+      <option value="Military Leave">Military Leave</option>
+      <option value="Not Eligible">Not Eligible</option>
+      <option value="Suspended">Suspended</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+        <path d="M7 7a1 1 0 011.707-.707l3.586 3.586a1 1 0 01-1.414 1.414l-3.586-3.586A1 1 0 017 7z" />
+        <path d="M7 13a1 1 0 011.707-.707l3.586 3.586a1 1 0 11-1.414 1.414l-3.586-3.586A1 1 0 017 13z" />
+      </svg>
+    </div>
+  </div>
+</TextField.Label>
         <TextField.Label>
   Current NY Deduction
   <TextField.Input
@@ -501,13 +520,23 @@ function UserAdminPage({
     if (searchResult.id === user.uid) {
       return (
         <form 
-          key={searchResult.id} 
-          onSubmit={(e) => { 
-            e.preventDefault(); 
-            // your submit logic...
-          }}
-          className="space-y-4"
-        >
+        key={searchResult.id} 
+        onSubmit={async (e) => { 
+          e.preventDefault(); 
+          await updateUser(
+            StatusInput,
+            user.uid,
+            CaseNotesInput,
+            LMInput,
+            CurrentTotalPremiumInput,
+            unionInput,
+            spouseInput,
+            startDateInput,
+            LastNameInput
+          );
+        }}
+        className="space-y-4"
+      >
           {searchResult.Files.map((file, index) => (
             <div key={index} className="border p-4 rounded-md space-y-2 max-w-lg">
               <label className="block">
@@ -531,9 +560,10 @@ function UserAdminPage({
   })}
 </div>
 
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+<div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
     <Button style={{ marginTop: '20px', width: 'auto' }} type="submit">Update User</Button>
-  </div>    </form>
+  </div>
+</form>
     );
   }
   return null;

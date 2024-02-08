@@ -6,6 +6,8 @@ import { getUsersCollection } from 'src/lib/server/collections';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const userId = req.query.userId as string; // Get the user ID from the URL
+    console.log('Updating user with ID:', userId); // Log the user ID
+
     const { ChangeDate,Status, FirstName, PreviousTotalPremium, MarkifBW, MM,union, spouse, startdate, LastName, LM, CurrentTotalPremium, CaseNotes } = req.body; // Extract the new values from the request body
 
     // Create an object with only the fields that are not undefined
@@ -23,16 +25,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (FirstName !== undefined) updateData.FirstName = FirstName;
     if (Status !== undefined) updateData.Status = Status;
     if (ChangeDate !== undefined) updateData.ChangeDate = ChangeDate;
-
-
-
     if (CurrentTotalPremium !== undefined) updateData.CurrentTotalPremium = union;
-
-
 
     try {
       // Update the user document in the database
-      await getUsersCollection().doc(userId).update(updateData);
+      await getUsersCollection().doc(userId).set(updateData, { merge: true });
 
       res.status(200).json({ message: 'User updated successfully' });
     } catch (error) {
