@@ -1,36 +1,42 @@
-// pages/api/searchUsers.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUsersCollection } from 'src/lib/server/collections';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { query, union, active, limit = 20 } = req.body;
+    const { query, union, active, reference, startAfter, limit = 20 } = req.body;
     
     let queryBuilder: any = getUsersCollection();
 
-    // Only add 'where' clause if 'query' is not an empty string
-    if (query !== '') {
-      queryBuilder = queryBuilder.where('Name', '==', query);
-    }
-
-    // Only add 'where' clause if 'union' is not an empty string
-    if (union !== '') {
+    if (union !== '' && union !== undefined) {
       queryBuilder = queryBuilder.where('union', '==', union);
     }
-
-    // Only add 'where' clause if 'active' is not an empty string
-    if (active !== '') {
-      // Convert the string 'true' or 'false' to boolean
+    
+    if (active !== '' && active !== undefined) {
       queryBuilder = queryBuilder.where('Active', '==', active === 'true');
     }
+    
+    if (reference !== '' && reference !== undefined) {
+      queryBuilder = queryBuilder.where('reference', '==', reference);
+    }
 
-    // Always add 'limit' to the query
+    // Order by 'Name' before using 'startAfter'
+    queryBuilder = queryBuilder.orderBy('Name');
+
+    if (startAfter && startAfter !== '') {
+      const lastUserDoc = await getUsersCollection().doc(startAfter).get();
+      if (lastUserDoc.exists) {
+        queryBuilder = queryBuilder.startAfter(lastUserDoc);
+      }
+    }
     queryBuilder = queryBuilder.limit(limit);
 
     try {
       const snapshot = await queryBuilder.get();
-      const users = snapshot.docs.map((doc: { id: any; data: () => any; }) => ({ id: doc.id, ...doc.data() }));
+      let users = snapshot.docs.map((doc: { id: any; data: () => any; }) => ({ id: doc.id, ...doc.data() }));
+
+      if (query !== '') {
+        users = users.filter((user: any) => user.Name.startsWith(query));
+      }
 
       res.status(200).json(users);
     } catch (error) {

@@ -9,7 +9,7 @@ import { useUserSession } from '~/core/hooks/use-user-session';
 import styles from './search.module.css'; // Make sure to create this CSS module file
 
 interface User {
-  reference: any;
+  reference: string;
   id: string;
   name: string;
   FirstName: string;
@@ -25,13 +25,13 @@ export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('');
   const [unionFilter, setUnionFilter] = useState('');
+  const [referenceFilter, setReferenceFilter] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [page, setPage] = useState(1);
-  const [lastUserId, setLastUserId] = useState<string | null>(null);
+  const [limit, setLimit] = useState(20);
 
   useEffect(() => {
     const executeSearch = async () => {
-      const requestBody = { query, active: activeFilter, union: unionFilter, startAfter: lastUserId, limit: 20 };
+      const requestBody = { query, active: activeFilter, union: unionFilter, reference: referenceFilter, limit };
       console.log("Search Request Body:", requestBody); // Logging for verification
 
       try {
@@ -46,9 +46,6 @@ export default function SearchPage() {
         if (response.ok) {
           const users = await response.json();
           setSearchResults(users);
-          if (users.length > 0) {
-            setLastUserId(users[users.length - 1].id);
-          }
         } else {
           console.error('Search failed');
         }
@@ -58,7 +55,7 @@ export default function SearchPage() {
     };
 
     executeSearch();
-  }, [query, activeFilter, unionFilter, page]);
+  }, [query, activeFilter, unionFilter, referenceFilter, limit]);
 
   // Define styles for the form container
   const formContainerStyles: React.CSSProperties = {
@@ -72,12 +69,20 @@ export default function SearchPage() {
     <div className={'flex flex-col space-y-6 pb-36'}>
       <UserGreetings />
 
-      <form onSubmit={(e) => e.preventDefault()} style={formContainerStyles}>
+      <form onSubmit={(e) => { e.preventDefault(); }} style={formContainerStyles}>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search users by name..."
+          className={styles.inputField}
+        />
+
+        <input
+          type="text"
+          value={referenceFilter}
+          onChange={(e) => setReferenceFilter(e.target.value)}
+          placeholder="Search users by reference..."
           className={styles.inputField}
         />
 
@@ -100,7 +105,8 @@ export default function SearchPage() {
           <option value="COBA">COBA</option>
           <option value="L831">L831</option>
         </select>
-        <button type="submit" className={styles.submitButton}>
+
+        <button type="submit" className={styles.submitButton} onClick={() => setLimit(20)}>
           Search
         </button>
       </form>
@@ -139,17 +145,16 @@ export default function SearchPage() {
           </div>
         </div>
 
-        <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+        <button onClick={() => setLimit(limit - 20)} disabled={limit === 20}>
           Previous Page
         </button>
-        <button onClick={() => setPage(page + 1)}>
+        <button onClick={() => setLimit(limit + 20)}>
           Next Page
         </button>
       </div>
     </div>
   );
 }
-
 function UserGreetings() {
   const user = useUserSession();
   const userDisplayName = user?.auth?.displayName ?? user?.auth?.email ?? '';
