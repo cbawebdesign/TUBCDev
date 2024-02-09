@@ -82,7 +82,7 @@ export default function SearchPage() {
           type="text"
           value={referenceFilter}
           onChange={(e) => setReferenceFilter(e.target.value)}
-          placeholder="Search users by reference..."
+          placeholder="Search users by User ID..."
           className={styles.inputField}
         />
 
@@ -143,17 +143,24 @@ export default function SearchPage() {
               </TableBody>
             </Table>
           </div>
-        </div>
+          </div>
 
-        <button onClick={() => setLimit(limit - 20)} disabled={limit === 20}>
-          Previous Page
-        </button>
-        <button onClick={() => setLimit(limit + 20)}>
-          Next Page
-        </button>
-      </div>
-    </div>
-  );
+          <button 
+  className={`${styles.submitButton} mt-8`}
+  onClick={() => setLimit(limit + 20)}
+>
+  Load More
+</button>
+<button 
+  className={`${styles.submitButton} mt-8`}
+  onClick={() => setLimit(limit - 20)} 
+  disabled={limit === 20}
+>
+  Load Less
+</button>
+</div>
+</div>
+);
 }
 function UserGreetings() {
   const user = useUserSession();

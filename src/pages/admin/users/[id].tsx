@@ -460,7 +460,7 @@ function UserAdminPage({
         </TextField.Label>
         <TextField.Label>
   Status
-  <div className="relative inline-block w-full text-gray-700">
+  <div className="relative inline-block w-full text-gray-700 w-64"> {/* Adjust the width here */}
     <select
       className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
       value={StatusInput}
