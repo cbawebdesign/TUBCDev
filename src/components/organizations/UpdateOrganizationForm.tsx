@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useStorage } from 'reactfire';
 import { Trans, useTranslation } from 'next-i18next';
@@ -27,18 +27,15 @@ const UpdateOrganizationForm = () => {
   const [updateOrganization, { loading }] = useUpdateOrganization();
 
   const [logoIsDirty, setLogoIsDirty] = useState(false);
-  const [isServiceMember, setIsServiceMember] = useState(organization?.serviceMember ?? false);
   const { t } = useTranslation('organization');
-  const currentOrganizationlastName = organization?.lastName ?? '';
+
   const currentOrganizationName = organization?.name ?? '';
   const currentLogoUrl = organization?.logoURL || null;
 
   const { register, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
       name: currentOrganizationName,
-      lastName: currentOrganizationlastName,
       logoURL: currentLogoUrl,
-      serviceMember: isServiceMember
     },
   });
 
@@ -48,7 +45,7 @@ const UpdateOrganizationForm = () => {
   }, [setValue]);
 
   const onSubmit = useCallback(
-    async (organizationName: string, organizationlastName: string, serviceMember: boolean,logoFile: Maybe<File>) => {
+    async (organizationName: string, logoFile: Maybe<File>) => {
       const organizationId = organization?.id;
 
       if (!organizationId) {
@@ -79,9 +76,7 @@ const UpdateOrganizationForm = () => {
       const organizationData: WithId<Partial<Organization>> = {
         id: organization.id,
         name: organizationName,
-        lastName: organizationlastName,
         logoURL: isLogoRemoved ? null : logoURL,
-        serviceMember: isServiceMember, // Include the serviceMember value
       };
 
       const promise = updateOrganization(organizationData).then(() => {
@@ -105,14 +100,12 @@ const UpdateOrganizationForm = () => {
       storage,
       t,
       updateOrganization,
-      isServiceMember,
     ],
   );
 
   useEffect(() => {
     reset({
       name: organization?.name,
-      lastName: organization?.lastName,
       logoURL: organization?.logoURL,
     });
   }, [organization, reset]);
@@ -121,16 +114,12 @@ const UpdateOrganizationForm = () => {
     required: true,
   });
 
-  const lastNameControl = register('lastName', {
-    required: true,
-  });
-
   const logoControl = register('logoURL');
 
   return (
     <form
       onSubmit={handleSubmit((value) => {
-        return onSubmit(value.name, value.lastName, value.serviceMember, getLogoFile(value.logoURL));
+        return onSubmit(value.name, getLogoFile(value.logoURL));
       })}
       className={'space-y-4'}
     >
@@ -138,6 +127,7 @@ const UpdateOrganizationForm = () => {
         <TextField>
           <TextField.Label>
             <Trans i18nKey={'organization:organizationNameInputLabel'} />
+
             <TextField.Input
               {...nameControl}
               data-cy={'organization-name-input'}
@@ -147,20 +137,9 @@ const UpdateOrganizationForm = () => {
           </TextField.Label>
         </TextField>
 
-        <TextField>
-          <TextField.Label>
-            <Trans i18nKey={'organization:organizationLastNameLabel'} />
-            <TextField.Input
-              {...lastNameControl}
-              data-cy={'organization-lastName-input'}
-              required
-              placeholder={''}
-            />
-          </TextField.Label>
-        </TextField>
-
         <Label>
           <Trans i18nKey={'organization:organizationLogoInputLabel'} />
+
           <ImageUploadInput
             {...logoControl}
             image={currentLogoUrl}
@@ -170,29 +149,19 @@ const UpdateOrganizationForm = () => {
           </ImageUploadInput>
         </Label>
 
-        {/* Service Member Checkbox */}
-        <Label>
-          <Trans i18nKey={'organization:organizationserviceMemberLabel'} />
-          <input
-            type="checkbox"
-            checked={isServiceMember}
-            onChange={(e) => setIsServiceMember(e.target.checked)}
-          />
-        </Label>
-
-        <Button
-          className={'w-full md:w-auto'}
-          data-cy={'update-organization-submit-button'}
-          loading={loading}
-        >
-          <Trans i18nKey={'organization:updateOrganizationSubmitLabel'} />
-        </Button>
+        <div>
+          <Button
+            className={'w-full md:w-auto'}
+            data-cy={'update-organization-submit-button'}
+            loading={loading}
+          >
+            <Trans i18nKey={'organization:updateOrganizationSubmitLabel'} />
+          </Button>
+        </div>
       </div>
     </form>
   );
 };
-
-// ... existing functions: uploadLogo, getLogoStoragePath, getLogoFile
 
 /**
  * @description Upload file to Storage

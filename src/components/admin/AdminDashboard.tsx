@@ -5,7 +5,6 @@ interface Data {
   organizationsCount: number;
   activeSubscriptions: number;
   trialSubscriptions: number;
-  cobacount:number;
 }
 
 function AdminDashboard({
@@ -31,9 +30,18 @@ function AdminDashboard({
         </Tile.Body>
       </Tile>
 
+      <Tile>
+        <Tile.Heading>Organizations</Tile.Heading>
+
+        <Tile.Body>
+          <div className={'flex justify-between'}>
+            <Tile.Figure>{data.organizationsCount}</Tile.Figure>
+          </div>
+        </Tile.Body>
+      </Tile>
 
       <Tile>
-        <Tile.Heading>Active Customers</Tile.Heading>
+        <Tile.Heading>Paying Customers</Tile.Heading>
 
         <Tile.Body>
           <div className={'flex justify-between'}>
@@ -43,29 +51,11 @@ function AdminDashboard({
       </Tile>
 
       <Tile>
-        <Tile.Heading>Inactive</Tile.Heading>
+        <Tile.Heading>Trials</Tile.Heading>
 
         <Tile.Body>
           <div className={'flex justify-between'}>
             <Tile.Figure>{data.trialSubscriptions}</Tile.Figure>
-          </div>
-        </Tile.Body>
-      </Tile>
-      <Tile>
-        <Tile.Heading>L831 Members</Tile.Heading>
-
-        <Tile.Body>
-          <div className={'flex justify-between'}>
-            <Tile.Figure>{data.organizationsCount}</Tile.Figure>
-          </div>
-        </Tile.Body>
-      </Tile>
-      <Tile>
-        <Tile.Heading>COBA Members</Tile.Heading>
-
-        <Tile.Body>
-          <div className={'flex justify-between'}>
-            <Tile.Figure>{data.cobacount}</Tile.Figure>
           </div>
         </Tile.Body>
       </Tile>

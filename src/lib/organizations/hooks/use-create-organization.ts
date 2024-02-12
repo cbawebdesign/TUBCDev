@@ -33,13 +33,14 @@ export function useCreateOrganization() {
     useRequestState<WithId<Organization>>();
 
   const createOrganizationCallback = useCallback(
-    async (name: string, serviceMember: boolean,lastName: string, email: string, contactnumber: string, spouse: string, dependants:string,) => {      const firestore = getFirestore();
+    async (name: string) => {
+      const firestore = getFirestore();
       const batch = writeBatch(firestore);
 
       try {
         setLoading(true);
 
-        const organizations = collection(firestore, USERS_COLLECTION);
+        const organizations = collection(firestore, ORGANIZATIONS_COLLECTION);
 
         const userDoc = doc(
           firestore,
@@ -51,12 +52,6 @@ export function useCreateOrganization() {
 
         const organizationData = {
           name,
-          lastName,
-          email,
-          contactnumber,
-          spouse,
-          dependants,
-          serviceMember,
           members: {
             [userDoc.id]: {
               role: MembershipRole.Owner,
@@ -71,12 +66,6 @@ export function useCreateOrganization() {
 
         setData({
           name,
-          lastName,
-          email,
-          contactnumber,
-          spouse,
-          dependants,
-          serviceMember,
           id: organizationDoc.id,
           members: {
             [userDoc.id]: {

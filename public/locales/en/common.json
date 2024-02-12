@@ -1,11 +1,7 @@
 {
   "dashboardTabLabel": "Dashboard",
-  "reportsLabel": "Reports",
-  "organizationSettingsTabLabel": "Customers",
+  "organizationSettingsTabLabel": "Unions",
   "settingsTabLabel": "Settings",
-  "searchLabel": "User Search",
-  "adminLabel": "Admin",
-  "NYLabel":"NY State Data",
   "profileSettingsTabLabel": "Profile",
   "subscriptionSettingsTabLabel": "Notes",
   "emailAddress": "Email Address",

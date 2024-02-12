@@ -11,9 +11,6 @@ const organizationPageObject = {
   $createOrganizationButton: () => $get(`create-organization-button`),
   $confirmCreateOrganizationButton: () =>
     $get(`confirm-create-organization-button`),
-
-  $createOrganizationNewInput: () => $get(`create-organization-new-input`),
-
   $createOrganizationNameInput: () => $get(`create-organization-name-input`),
   $getMemberByEmail(invitedMemberEmail: string) {
     return cy.contains(`[data-cy="organization-member"]`, invitedMemberEmail);

@@ -58,7 +58,7 @@ const OrganizationsSelector = ({ userId }: { userId: string }) => {
 
         <SelectContent position={'popper'}>
           <SelectGroup>
-            <SelectLabel>Your Customers</SelectLabel>
+            <SelectLabel>Your Organizations</SelectLabel>
 
             <SelectSeparator />
 
