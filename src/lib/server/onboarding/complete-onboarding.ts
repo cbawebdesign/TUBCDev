@@ -4,10 +4,17 @@ import { MembershipRole } from '~/lib/organizations/types/membership-role';
 
 import { getOrganizationsCollection, getUsersCollection } from '../collections';
 import getRestFirestore from '~/core/firebase/admin/get-rest-firestore';
+import { StringNullableChain } from 'cypress/types/lodash';
 
 interface Params {
   organizationName: string;
+  organizationlastName: string;
+  organizationemail: string;
   userId: string;
+  organizationcontactnumber: string;
+  organizationspouse: string;
+  organizationdependants: string;
+  organizationserviceMember: boolean;
 }
 
 /**
@@ -17,8 +24,14 @@ interface Params {
  * associated with the User who signed up using its ID
  * @param userId
  * @param organizationName
+ * @param organizationlastName
+ * @param organizationcontactnumber
+ * @param organizationspouse
+ * @param organizationdependants
+ * @param organizationserviceMember
+
  */
-export async function completeOnboarding({ userId, organizationName }: Params) {
+export async function completeOnboarding({ userId, organizationserviceMember, organizationName,organizationemail, organizationlastName, organizationcontactnumber, organizationdependants, organizationspouse }: Params) {
   const firestore = getRestFirestore();
   const auth = getAuth();
 
@@ -37,7 +50,13 @@ export async function completeOnboarding({ userId, organizationName }: Params) {
   // create organization
   batch.create(organizationRef, {
     name: organizationName,
+    lastName: organizationlastName,
     members: organizationMembers,
+    email: organizationemail,
+    spouse: organizationspouse,
+    contactnumber: organizationcontactnumber,
+    dependants: organizationdependants,
+    serviceMember: organizationserviceMember
   });
 
   // Here we create the user's Firestore record

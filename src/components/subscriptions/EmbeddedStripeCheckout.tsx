@@ -1,4 +1,3 @@
-import { loadStripe } from '@stripe/stripe-js';
 import { useState } from 'react';
 
 import {
@@ -29,7 +28,7 @@ if (!STRIPE_PUBLISHABLE_KEY) {
   );
 }
 
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+const stripePromise = (STRIPE_PUBLISHABLE_KEY);
 
 export default function EmbeddedStripeCheckout({
   clientSecret,

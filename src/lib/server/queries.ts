@@ -6,6 +6,10 @@ import { getOrganizationsCollection, getUsersCollection } from './collections';
  * {@link organizationId}
  * @param organizationId
  */
+
+
+
+
 export async function getOrganizationById(organizationId: string) {
   const organizations = getOrganizationsCollection();
 
