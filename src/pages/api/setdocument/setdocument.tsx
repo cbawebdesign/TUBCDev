@@ -1,10 +1,11 @@
-// pages/api/update-user.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { doc, updateDoc, arrayUnion } from "firebase/firestore"; 
 import { getFirestore } from "firebase/firestore";
+import { initializeFirebaseAdminApp } from 'src/core/firebase/admin/initialize-firebase-admin-app';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    await initializeFirebaseAdminApp();
+
     if (req.method === 'POST') {
       try {
         const { uid, avatarURL, fileName } = req.body;
@@ -29,4 +30,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       res.status(405).end('Method Not Allowed');
     }
-  }
+}

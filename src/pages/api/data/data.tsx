@@ -1,9 +1,10 @@
-// pages/api/get-documents.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getDocumentsCollection } from 'src/lib/server/collections'; // Import your Firestore config
+import { getDocumentsCollection } from 'src/lib/server/collections';
+import { initializeFirebaseAdminApp } from 'src/core/firebase/admin/initialize-firebase-admin-app';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await initializeFirebaseAdminApp();
+
   if (req.method === 'GET') {
     try {
       const documentsSnapshot = await getDocumentsCollection().get();
