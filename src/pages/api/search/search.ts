@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUsersCollection } from 'src/lib/server/collections';
+import { initializeFirebaseAdminApp } from 'src/core/firebase/admin/initialize-firebase-admin-app';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  await initializeFirebaseAdminApp();
+
   if (req.method === 'POST') {
     const { query, union, active, reference, startAfter, limit = 20 } = req.body;
     
@@ -46,4 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else {
     res.status(405).end('Method Not Allowed');
   }
-}
+};
+
+export default handler;
