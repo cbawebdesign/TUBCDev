@@ -6,7 +6,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   await initializeFirebaseAdminApp();
 
   if (req.method === 'POST') {
-    const { query, union, active, reference, startAfter, limit = 20 } = req.body;
+    const { query, union, active, reference, startAfter, limit = 2000 } = req.body;
     
     let queryBuilder: any = getUsersCollection();
 

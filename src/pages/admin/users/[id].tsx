@@ -162,6 +162,9 @@ function UserAdminPage({
       fetchUsers();
     }, [query, activeFilter, unionFilter, user]);
     useEffect(() => {
+      console.log('User UID:', user.uid); // Log the user UID
+
+
       const currentUser = searchResults.find(result => result.id === user.uid);
       console.log('Current user:', currentUser); // Log the current user
 
