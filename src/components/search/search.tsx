@@ -76,6 +76,8 @@ export default function SearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search users by name..."
           className={styles.inputField}
+          style={{ color: '#333' }} // Dark gray color
+
         />
 
         <input
@@ -84,12 +86,15 @@ export default function SearchPage() {
           onChange={(e) => setReferenceFilter(e.target.value)}
           placeholder="Search users by User ID..."
           className={styles.inputField}
+          style={{ color: '#333' }} // Dark gray color
         />
 
         <select
           value={activeFilter}
           onChange={(e) => setActiveFilter(e.target.value)}
           className={styles.inputField}
+          style={{ color: '#333' }} // Dark gray color
+
         >
           <option value="">Select Active Status</option>
           <option value="true">Active</option>
@@ -100,6 +105,7 @@ export default function SearchPage() {
           value={unionFilter}
           onChange={(e) => setUnionFilter(e.target.value)}
           className={styles.inputField}
+          style={{ color: '#333' }} // Dark gray color
         >
           <option value="">Select Union</option>
           <option value="COBA">COBA</option>

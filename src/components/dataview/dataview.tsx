@@ -218,69 +218,89 @@ export default function DownloadPage() {
     ))}
   </div>
 )}
-<div style={sectionStyle}>
-  <h2 style={{ marginTop: '20px' }}>Document Queue:</h2>
+  <div>
+  <div style={{ display: 'inline-block', borderBottom: '2px solid black', paddingBottom: '5px' }}>
+  <h2 style={{ marginTop: '20px', fontSize: '25px', fontWeight: 'bold' }}>Document Queue:</h2>
+</div>    <div style={{...sectionStyle, border: '1px solid blue', padding: '10px', margin: '10px'}}>     
 
-  <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
-    L831 
-    <button 
-      onClick={() => setL831Visible(!isL831Visible)}
-      style={{ margin: '10px', transition: 'background-color 0.3s ease' }}
-    >
-      Toggle {isL831Visible ? <FaCaretUp /> : <FaCaretRight />}
-    </button>
-  </h2>
-  {isL831Visible && selectedSubCategories.map(subCategory => {
-    let filteredData = newData.filter(data => 
-      data.subCategory === subCategory && 
-      data.union.includes('L831')
-    );
-    filteredData = filterDataByMonth(filteredData);
-    if (filteredData.length === 0) {
-      return <p key={subCategory}>No data available for {subCategory}</p>
-    }
-    return filteredData.map((data, index) => (
-      <div key={index} style={boxStyle}>
-        <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
-        <p>Decrypted data for ID {data.id}: </p>
-        <p>Decrypted image title: {data.image}</p>
-        <a href={data.url} download target="_blank">
-          <button style={buttonStyle}>Download</button>
-        </a>
-      </div>
-    ));
-  })}
+      <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+        L831 
+        <button 
+  onClick={() => setL831Visible(!isL831Visible)}
+  style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+>
+  Toggle {isL831Visible ? <FaCaretUp /> : <FaCaretRight />}
+</button>
+      </h2>
+      {isL831Visible && (
+        <div>
+          {selectedSubCategories.map(subCategory => {
+            let filteredData = newData.filter(data => 
+              data.subCategory === subCategory && 
+              data.union.includes('L831')
+            );
+            filteredData = filterDataByMonth(filteredData);
+            filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-  <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
-    COBA 
-    <button 
-      onClick={() => setCOBAVisible(!isCOBAVisible)}
-      style={{ margin: '10px', transition: 'background-color 0.3s ease' }}
-    >
-      Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
-    </button>
-  </h2>
-  {isCOBAVisible && selectedSubCategories.map(subCategory => {
-    let filteredData = newData.filter(data => 
-      data.subCategory === subCategory && 
-      data.union.includes('COBA')
-    );
-    filteredData = filterDataByMonth(filteredData);
-    if (filteredData.length === 0) {
-      return <p key={subCategory}>No data available for {subCategory}</p>
-    }
-    return filteredData.map((data, index) => (
-      <div key={index} style={boxStyle}>
-        <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
-        <p>Decrypted data for ID {data.id}: </p>
-        <p>Decrypted image title: {data.image}</p>
-        <a href={data.url} download target="_blank">
-          <button style={buttonStyle}>Download</button>
-        </a>
-      </div>
-    ));
-  })}
-</div>
+            if (filteredData.length === 0) {
+              return <p key={subCategory}>No data available for {subCategory}</p>
+            }
+            return filteredData.map((data, index) => (
+              <div key={index} style={boxStyle}>
+                <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+                <p>Decrypted data for ID {data.id}: </p>
+                <p>Decrypted image title: {data.image}</p>
+                <a href={data.url} download target="_blank">
+                  <button style={buttonStyle}>Download</button>
+                </a>
+              </div>
+            ));
+          })}
+        </div>
+      )}
     </div>
+
+    <div style={{...sectionStyle, border: '1px solid blue', padding: '10px', margin: '10px'}}>
+      <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+        COBA 
+        <button 
+  onClick={() => setCOBAVisible(!isCOBAVisible)}
+  style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+>
+  Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
+</button>
+      </h2>
+      {isCOBAVisible && (
+        <div>
+          {selectedSubCategories.map(subCategory => {
+            let filteredData = newData.filter(data => 
+              data.subCategory === subCategory && 
+              data.union.includes('COBA')
+            );
+            filteredData = filterDataByMonth(filteredData);
+            filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+            if (filteredData.length === 0) {
+              return <p key={subCategory}>No data available for {subCategory}</p>
+            }
+            return filteredData.map((data, index) => (
+              <div key={index} style={boxStyle}>
+                <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+                <p>Decrypted data for ID {data.id}:</p>
+                <p>Decrypted image title: {data.image}</p>
+                <a href={data.url} download target="_blank">
+                  <button style={buttonStyle}>Download</button>
+                </a>
+              </div>
+            ));
+          })}
+        </div>
+      )}
+    </div>
+  </div>
+
+
+
+  </div>
   );
 }
