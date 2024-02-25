@@ -11,33 +11,31 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   if (req.method === 'POST') {
     try {
-      const { userName, categories } = req.body as { userName: string, categories: string[] };
+      const { userName, categories } = req.body as { userName: string, categories: string };
       const postsCollection = collection(db, 'posts');
-      
-      if (Array.isArray(categories)) {
-        const q1 = firestoreQuery(postsCollection, where('users', 'array-contains', userName));
-        const postDocsSnapshot1 = await getDocs(q1);
-        const posts1 = postDocsSnapshot1.docs.map(doc => doc.data());
+      const q = firestoreQuery(postsCollection, where('users', 'array-contains', userName), where('categories', '==', categories));
+      const postDocsSnapshot = await getDocs(q);
+      postDocsSnapshot.docs.forEach(doc => {
+        const timestamp = doc.data().timestamp;
+        const date = timestamp.toDate();
+        console.log(`Timestamp for document ${doc.id}:`,timestamp, date);
+      });
+      const posts = postDocsSnapshot.docs.map(doc => ({
+   
+        fileName: doc.data().filename,
+        url: doc.data().downloadURL,
+        image: doc.data().image, // assuming the field in your Firestore document is named 'image'
+        timestamp: doc.data().timestamp, // add this line
+        union: doc.data().union,
+      }));
 
-        const posts = posts1.filter(post => categories.some(category => post.categories && post.categories.includes(category))).map(post => ({
-          fileName: post.filename,
-          url: post.downloadURL,
-          image: post.image,
-          timestamp: post.timestamp,
-        }));
-
-        res.status(200).json(posts);
-      } else {
-        console.error('Invalid categories:', categories);
-        res.status(400).json({ error: 'Bad Request', details: 'Invalid categories' });
-      }
+      res.status(200).json(posts);
     } catch (error) {
       console.error('Error fetching posts:', (error as Error).message);
       res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });

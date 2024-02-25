@@ -10,10 +10,11 @@ import { Timestamp } from "firebase/firestore";
 export default function DownloadPage() {
   const [isSdkInitialized, setSdkInitialized] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
-  const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string }[]>([]);
-          const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
+  const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string, union: string }[]>([]);         
+   const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
           const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
-          const [currentSubCategory, setCurrentSubCategory] = useState<string | string[] | null>(null);        
+          const [currentSubCategory, setCurrentSubCategory] = useState<string | null>(null);
+        
   useEffect(() => {
     initialize(
       () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
@@ -27,29 +28,29 @@ export default function DownloadPage() {
   useEffect(() => {
     const fetchAndDecryptData = async () => {
       if (!isSdkInitialized || !currentCategory) return;
-    
+  
       const auth = getAuth();
       const user = auth.currentUser;
       let userName = null;
-    
+  
       if (user) {
         const db = getFirestore();
         const userDoc = await getDoc(doc(db, "users", user.uid));
-    
+  
         if (userDoc.exists()) {
           const userData = userDoc.data() as { userName: string };
           userName = userData.userName;
         }
       }
-    
+  
       if (!userName) {
         console.error('No user is currently logged in or userName is not set');
         return;
       }
-    
+  
       const requestBody = {
         userName: userName,
-        categories: selectedSubCategories,
+        categories: currentSubCategory,
       };
       const response = await fetch(`/api/decrypt/decrypt`, {
         method: 'POST',
@@ -59,17 +60,18 @@ export default function DownloadPage() {
         body: JSON.stringify(requestBody),
       });
       const groups = await response.json();
-    
+  
       for (const group of groups) {
         if (group.url && group.image) {
           const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
           const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
-          const timestampObject = group.timestamp;
-          const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
-          const date = new Date(timestampMilliseconds);
-          console.log(`Date for group ${group.id}:`, date);
+         // Convert the Firestore timestamp to a JavaScript Date object
+    const timestampObject = group.timestamp; // Replace with the actual object
+    const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
+    const date = new Date(timestampMilliseconds);
+    console.log(`Date for group ${group.id}:`, date);
           let documentId, imageId;
-    
+  
           try {
             documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
             imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
@@ -77,19 +79,17 @@ export default function DownloadPage() {
             console.error(`Error getting document ID for group ${group.id}:`, error);
             continue;
           }
-    
+  
           if (documentId && imageId) {
             const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
             const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
             const decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
             const decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
           
-            selectedSubCategories.forEach(subCategory => {
-              // Check if the document for the current subcategory is already in the newData state
-              if (!newData.some(data => data.subCategory === subCategory)) {
-                setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: subCategory }]);
-              }
-            });
+            // Check if the document for the current subcategory is already in the newData state
+            if (!newData.some(data => data.subCategory === currentSubCategory)) {
+              setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: currentSubCategory, union: group.union }]);
+            }
           } else {
             console.error(`Document ID is null for group ${group.id}`);
           }
@@ -99,17 +99,17 @@ export default function DownloadPage() {
       }
     };
     fetchAndDecryptData();
-  }, [isSdkInitialized, selectedSubCategories]);
+  }, [isSdkInitialized, currentSubCategory]);
 
-  const filterDataByMonth = (data: { id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
+  const filterDataByMonth = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
     if (selectedMonths.length === 0) return data;
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
   };
   
-  const mainCategories = ['COBA', 'L831'];
+  const mainCategories = ['TEST', 'TEST2'];
   const subCategories = {
-    'COBA': ['EXCEL1', 'EXCEL3'],
-    'L831': ['EXCEL1', 'EXCEL2'],
+    'TEST': 'TEST',
+    'TEST2': 'TEST2',
     'Financials': 'Financials2023',
   };
   const buttonStyle = {
@@ -167,45 +167,24 @@ export default function DownloadPage() {
 <button style={buttonStyle} onClick={() => setSelectedMonths([])}>
   Clear selected months
 </button>
-{currentCategory && (
-        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
-          {Array.isArray(subCategories[currentCategory as keyof typeof subCategories]) 
-            ? (subCategories[currentCategory as keyof typeof subCategories] as string[]).map((subCategory: string) => (
-              <label style={buttonStyle}>
-                <input
-                  type="checkbox"
-                  checked={selectedSubCategories.includes(subCategory)}
-                  onChange={() => {
-                    console.log('Subcategory clicked:', subCategory);
-                    if (selectedSubCategories.includes(subCategory)) {
-                      setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
-                    } else {
-                      setSelectedSubCategories([...selectedSubCategories, subCategory]);
-                    }
-                  }}
-                />
-                {subCategory}
-              </label>
-            ))
-            : (
-              <label style={buttonStyle}>
-                <input
-                  type="checkbox"
-                  checked={selectedSubCategories.includes(subCategories[currentCategory as keyof typeof subCategories] as string)}
-                  onChange={() => {
-                    const subCategory = subCategories[currentCategory as keyof typeof subCategories] as string;
-                    console.log('Subcategory clicked:', subCategory);
-                    if (selectedSubCategories.includes(subCategory)) {
-                      setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
-                    } else {
-                      setSelectedSubCategories([...selectedSubCategories, subCategory]);
-                    }
-                  }}
-                />
-                {subCategories[currentCategory as keyof typeof subCategories]}
-              </label>
-      )
-    }
+      {currentCategory && (
+  <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+    <label style={buttonStyle}>
+      <input
+        type="checkbox"
+        checked={selectedSubCategories.includes(subCategories[currentCategory as keyof typeof subCategories])}
+        onChange={() => {
+          const subCategory = subCategories[currentCategory as keyof typeof subCategories];
+          console.log('Subcategory clicked:', subCategory);
+          if (selectedSubCategories.includes(subCategory)) {
+            setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
+          } else {
+            setSelectedSubCategories([...selectedSubCategories, subCategory]);
+          }
+        }}
+      />
+      {subCategories[currentCategory as keyof typeof subCategories]}
+    </label>
   </div>
 )}
  {selectedSubCategories.length > 0 && (
@@ -236,7 +215,7 @@ export default function DownloadPage() {
 {selectedSubCategories.map(subCategory => {
   let filteredData = newData.filter(data => 
     data.subCategory === subCategory && 
-    data.category.includes('L831')
+    data.union.includes('L831') // change this line
   );
   filteredData = filterDataByMonth(filteredData);
   if (filteredData.length === 0) {
@@ -256,10 +235,10 @@ export default function DownloadPage() {
 
 <h2>COBA</h2>
 {selectedSubCategories.map(subCategory => {
-  let filteredData = newData.filter(data => 
-    data.subCategory === subCategory && 
-    data.category.includes('COBA')
-  );
+let filteredData = newData.filter(data => 
+  data.subCategory === subCategory && 
+  data.union.includes('COBA') // change this line
+);
   filteredData = filterDataByMonth(filteredData);
   if (filteredData.length === 0) {
     return <p key={subCategory}>No data available for {subCategory}</p>
