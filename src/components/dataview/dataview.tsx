@@ -7,6 +7,7 @@ import { getDoc } from "firebase/firestore";
 import { doc } from "firebase/firestore";
 import Button from '~/core/ui/Button';
 import { Timestamp } from "firebase/firestore";
+import { FaCaretDown, FaCaretRight, FaCaretUp } from 'react-icons/fa';
 export default function DownloadPage() {
   const [isSdkInitialized, setSdkInitialized] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
@@ -14,7 +15,8 @@ export default function DownloadPage() {
    const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
           const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
           const [currentSubCategory, setCurrentSubCategory] = useState<string | null>(null);
-        
+          const [isL831Visible, setL831Visible] = useState(true);
+          const [isCOBAVisible, setCOBAVisible] = useState(true);
   useEffect(() => {
     initialize(
       () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
@@ -134,6 +136,13 @@ export default function DownloadPage() {
     borderRadius: '15px', // This will make the border rounded
     boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
   };
+  const sectionStyle = {
+    border: '1px solid #0000FF',
+    borderRadius: '10px',
+    padding: '10px',
+    margin: '20px 0',
+    boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
+  };
   return (
     <div>
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -209,51 +218,69 @@ export default function DownloadPage() {
     ))}
   </div>
 )}
-<h2 style={{ marginTop: '20px' }}>Document Queue:</h2>
+<div style={sectionStyle}>
+  <h2 style={{ marginTop: '20px' }}>Document Queue:</h2>
 
-<h2>L831</h2>
-{selectedSubCategories.map(subCategory => {
-  let filteredData = newData.filter(data => 
-    data.subCategory === subCategory && 
-    data.union.includes('L831') // change this line
-  );
-  filteredData = filterDataByMonth(filteredData);
-  if (filteredData.length === 0) {
-    return <p key={subCategory}>No data available for {subCategory}</p>
-  }
-  return filteredData.map((data, index) => (
-    <div key={index} style={boxStyle}>
-      <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
-      <p>Decrypted data for ID {data.id}: </p>
-      <p>Decrypted image title: {data.image}</p>
-      <a href={data.url} download target="_blank">
-        <button style={buttonStyle}>Download</button>
-      </a>
-    </div>
-  ));
-})}
+  <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+    L831 
+    <button 
+      onClick={() => setL831Visible(!isL831Visible)}
+      style={{ margin: '10px', transition: 'background-color 0.3s ease' }}
+    >
+      Toggle {isL831Visible ? <FaCaretUp /> : <FaCaretRight />}
+    </button>
+  </h2>
+  {isL831Visible && selectedSubCategories.map(subCategory => {
+    let filteredData = newData.filter(data => 
+      data.subCategory === subCategory && 
+      data.union.includes('L831')
+    );
+    filteredData = filterDataByMonth(filteredData);
+    if (filteredData.length === 0) {
+      return <p key={subCategory}>No data available for {subCategory}</p>
+    }
+    return filteredData.map((data, index) => (
+      <div key={index} style={boxStyle}>
+        <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+        <p>Decrypted data for ID {data.id}: </p>
+        <p>Decrypted image title: {data.image}</p>
+        <a href={data.url} download target="_blank">
+          <button style={buttonStyle}>Download</button>
+        </a>
+      </div>
+    ));
+  })}
 
-<h2>COBA</h2>
-{selectedSubCategories.map(subCategory => {
-let filteredData = newData.filter(data => 
-  data.subCategory === subCategory && 
-  data.union.includes('COBA') // change this line
-);
-  filteredData = filterDataByMonth(filteredData);
-  if (filteredData.length === 0) {
-    return <p key={subCategory}>No data available for {subCategory}</p>
-  }
-  return filteredData.map((data, index) => (
-    <div key={index} style={boxStyle}>
-      <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
-      <p>Decrypted data for ID {data.id}: </p>
-      <p>Decrypted image title: {data.image}</p>
-      <a href={data.url} download target="_blank">
-        <button style={buttonStyle}>Download</button>
-      </a>
-    </div>
-  ));
-})}
+  <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+    COBA 
+    <button 
+      onClick={() => setCOBAVisible(!isCOBAVisible)}
+      style={{ margin: '10px', transition: 'background-color 0.3s ease' }}
+    >
+      Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
+    </button>
+  </h2>
+  {isCOBAVisible && selectedSubCategories.map(subCategory => {
+    let filteredData = newData.filter(data => 
+      data.subCategory === subCategory && 
+      data.union.includes('COBA')
+    );
+    filteredData = filterDataByMonth(filteredData);
+    if (filteredData.length === 0) {
+      return <p key={subCategory}>No data available for {subCategory}</p>
+    }
+    return filteredData.map((data, index) => (
+      <div key={index} style={boxStyle}>
+        <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+        <p>Decrypted data for ID {data.id}: </p>
+        <p>Decrypted image title: {data.image}</p>
+        <a href={data.url} download target="_blank">
+          <button style={buttonStyle}>Download</button>
+        </a>
+      </div>
+    ));
+  })}
 </div>
+    </div>
   );
 }
