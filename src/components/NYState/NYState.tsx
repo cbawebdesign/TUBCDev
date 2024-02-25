@@ -1,237 +1,191 @@
-import { Line, ResponsiveContainer, LineChart, XAxis } from 'recharts';
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { initialize, document } from '@ironcorelabs/ironweb';
 
-import Tile from '~/core/ui/Tile';
-import Heading from '~/core/ui/Heading';
+export default function UploadPage() {
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [isSdkInitialized, setSdkInitialized] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); // Add this line
+  const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string, group: string }[]>([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string>('');
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const categories = ['L831', 'COBA', 'CAS23Q3', 'CAS23Q2'];
+  const [hasError, setHasError] = useState(false);
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/core/ui/Table';
-
-import { useUserSession } from '~/core/hooks/use-user-session';
-import { Title } from '@radix-ui/react-dialog';
-
-export default function NYStatePage() {
-  const mrr = useMemo(() => generateDemoData(), []);
-  const visitors = useMemo(() => generateDemoData(), []);
-  const returningVisitors = useMemo(() => generateDemoData(), []);
-  const churn = useMemo(() => generateDemoData(), []);
-  const netRevenue = useMemo(() => generateDemoData(), []);
-  const fees = useMemo(() => generateDemoData(), []);
-  const newCustomers = useMemo(() => generateDemoData(), []);
-  const tickets = useMemo(() => generateDemoData(), []);
-  const activeUsers = useMemo(() => generateDemoData(), []);
-  const [documents, setDocuments] = useState<Document[]>([]);
-  
-  
   useEffect(() => {
-    fetch('/api/datatwo/datatwo')
-      .then(response => response.json())
-      .then(setDocuments);
+    initialize(
+      () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
+        .then(response => response.text()),
+      () => Promise.resolve('testpassword'),
+    )
+    .then(() => setSdkInitialized(true))
+    .catch((error: Error) => console.error('Error initializing IronWeb SDK:', error));
   }, []);
-  const L831Documents = documents
-  .filter(document => document.title.includes('L831'))
-  .sort((a, b) => {
-    const dateA = new Date(a.title.split(" ").pop() || "");
-    const dateB = new Date(b.title.split(" ").pop() || "");
-    return dateB.getTime() - dateA.getTime();
-  });
 
-const COBADocuments = documents
-  .filter(document => document.title.includes('COBA'))
-  .sort((a, b) => {
-    const dateA = new Date(a.title.split(" ").pop() || "");
-    const dateB = new Date(b.title.split(" ").pop() || "");
-    return dateB.getTime() - dateA.getTime();
-  });
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFiles(event.target.files);
+  };
+
+  const handleUpload = async () => {
+    if (!files || !isSdkInitialized) return;
+// Check if a category is selected
+if (!selectedCategories) {
+  alert('Please select a category before uploading.');
+  return;
+}
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const storage = getStorage();
+      const storageRef = ref(storage, 'groups/' + file.name);
+
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress); // Update the progress
+          console.log('Upload is ' + progress + '% done');
+        }, 
+        (error) => {
+          console.log(error);
+        }, 
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log('File available at', downloadURL);
+
+          // Convert the download URL string to a Uint8Array
+          const urlUint8Array = new TextEncoder().encode(downloadURL);
+
+          // Encrypt the URL
+          const encryptedUrlResult = await document.encrypt(urlUint8Array);
+
+          // Convert the encrypted URL to a base64 string
+          const encryptedUrl = btoa(String.fromCharCode(...new Uint8Array(encryptedUrlResult.document)));
+
+          // Convert the fileName to a Uint8Array
+          const fileNameUint8Array = new TextEncoder().encode(file.name);
+
+          // Encrypt the fileName
+          const encryptedFileNameResult = await document.encrypt(fileNameUint8Array);
+
+          // Convert the encrypted fileName to a base64 string
+          const encryptedFileName = btoa(String.fromCharCode(...new Uint8Array(encryptedFileNameResult.document)));
+
+          // Make a request to your API to update the group document
+          const response = await fetch('/api/uploads/uploads', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fileName: encryptedFileName,
+              url: encryptedUrl,
+              originalFileName: file.name, // Send the original file name
+              categories: selectedCategories, // Send the selected categories
+            }),
+          });
+// In your API request, add the error message to the uploadErrors array
+if (!response.ok) {
+  const errorData = await response.json();
+  setUploadErrors(prevErrors => [...prevErrors, errorData.error]);
+  setHasError(true); // Set hasError to true
+} else {
+            const data = await response.json();
+            console.log(data);
+            // After a file is uploaded, add its name to the state
+            setUploadedFiles(prevFiles => [...prevFiles, { fileName: file.name, group: data.group }]);
+            // Set uploadSuccess to true
+            setUploadSuccess(true);
+          }
+        }
+      );
+    }
+  };
+  const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+    if (checked) {
+      setSelectedCategories(name);
+
+    } else {
+      setSelectedCategories('');
+    }
+  };
+  const buttonStyle = {
+    backgroundColor: '#0000FF', /* Dark Blue */
+    border: 'none',
+    color: 'white',
+    padding: '15px 32px',
+    textAlign: 'center' as 'center',
+    textDecoration: 'none',
+    display: 'inline-block',
+    fontSize: '16px',
+    margin: '4px 2px',
+    cursor: 'pointer',
+    borderRadius: '12px', // This will make the edges rounded
+    boxShadow: '0px 8px 15px rgba(0, 0, 0, 0.1)', // This will add a shadow
+  };
+  const uploadedFileStyle = {
+    marginTop: '20px', 
+    marginBottom: '20px', 
+    border: '1px solid #0000FF', 
+    padding: '10px',
+    borderRadius: '15px', // This will make the border rounded
+    boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
+  };
+  const categoryStyle = {
+    display: 'inline-block',
+    margin: '10px',
+    padding: '10px',
+    borderRadius: '5px',
+    backgroundColor: '#f2f2f2',
+  };
+  const checkboxStyle = {
+    backgroundColor: '#ffffff',
+  };
   return (
-    <div className={'flex flex-col space-y-6 pb-36'}>
-      <UserGreetings />
-      <p>ADMIN REPORTS</p>
+    <div style={{ marginTop: '50px' }}>
+      <input 
+        type="file" 
+        multiple 
+        onChange={handleFileChange} 
+        id="fileInput" 
+        style={{ display: 'none' }}
+      />
+      <label htmlFor="fileInput" style={buttonStyle}>Choose Files</label>
+      <button style={buttonStyle} onClick={handleUpload}>Upload</button>
   
-      <div className={'mb-8'}>
-        <h2 className={'mb-4'}>L831 Documents</h2>
-        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-          {L831Documents.map((document, index) => (
-            <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
-              <Tile>
-                <div className="text-center font-bold text-sm mb-2">
-                  <div className="text-sm">
-                    <Tile.Heading>{document.title}</Tile.Heading>
-                  </div>
-                </div>
-  
-                <div className="px-6 py-4">
-                  <Tile.Body>
-                    <a href={document.URL} download>
-                      <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Download
-                      </button>
-                    </a>
-                  </Tile.Body>
-                </div>
-              </Tile>
-            </div>
-          ))}
-        </div>
+      {/* Add the checkboxes here */}
+      <div>
+        {categories.map((category, index) => (
+    <div key={index} style={categoryStyle}>
+    <input 
+              type="checkbox" 
+              id={`category-${index}`} 
+              name={category} 
+              onChange={handleCategoryChange}
+              style={buttonStyle}
+            />
+      <label htmlFor={`category-${index}`} style={{ color: '#000000' }}>{category}</label>
+          </div>
+        ))}
       </div>
   
-      <div className={'mb-8'}>
-        <h2 className={'mb-4'}>COBA Documents</h2>
-        <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-          {COBADocuments.map((document, index) => (
-            <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
-              <Tile>
-                <div className="text-center font-bold text-sm mb-2">
-                  <div className="text-sm">
-                    <Tile.Heading>{document.title}</Tile.Heading>
-                  </div>
-                </div>
-  
-                <div className="px-6 py-4">
-                  <Tile.Body>
-                    <a href={document.URL} download>
-                      <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Download
-                      </button>
-                    </a>
-                  </Tile.Body>
-                </div>
-              </Tile>
-            </div>
-          ))}
-        </div>
+      <div style={{ marginTop: '20px' }}>
+        <progress value={uploadProgress} max="100" style={{ width: '50%', height: '20px', borderRadius: '10px', overflow: 'hidden' }} />
+      </div>
+      {uploadSuccess && <p style={{ color: 'green' }}>Upload successful!</p>}
+{hasError && uploadErrors.map((error, index) => (
+  <p key={index} style={{ color: 'red' }}>{error}</p> // Display the error messages in red
+))}     <div>
+        <h2 style={{ marginTop: '20px' }}>Uploaded files:</h2>
+        {uploadedFiles.map((file, index) => (
+  <div key={index} style={uploadedFileStyle}>
+    <h2 style={{ color: '#0000FF' }}>File: {file.fileName}</h2>
+    <p>Group: {file.group}</p>
+  </div>
+))}
       </div>
     </div>
   );
-
-function UserGreetings() {
-  const user = useUserSession();
-  const userDisplayName = user?.auth?.displayName ?? user?.auth?.email ?? '';
-
-  return (
-    <div>
-      <Heading type={4}>Welcome Back, {userDisplayName}</Heading>
-
-      <p className={'text-gray-500 dark:text-gray-400'}>
-        <span>Here&apos;s what is happening across your business</span>
-      </p>
-    </div>
-  );
-}
-
-function generateDemoData() {
-  const today = new Date();
-
-  const formatter = new Intl.DateTimeFormat('en-us', {
-    month: 'long',
-    year: '2-digit',
-  });
-
-  const data: { value: string; name: string }[] = [];
-
-  for (let n = 8; n > 0; n -= 1) {
-    const date = new Date(today.getFullYear(), today.getMonth() - n, 1);
-
-    data.push({
-      name: formatter.format(date) as string,
-      value: (Math.random() * 10).toFixed(1),
-    });
-  }
-
-  return [data, data[data.length - 1].value] as [typeof data, string];
-}
-
-function Chart(
-  props: React.PropsWithChildren<{ data: { value: string; name: string }[] }>,
-) {
-  return (
-    <div className={'h-36'}>
-      <ResponsiveContainer width={'100%'} height={'100%'}>
-        <LineChart data={props.data}>
-          <Line
-            className={'text-primary'}
-            type="monotone"
-            dataKey="value"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            dot={false}
-          />
-
-          <XAxis
-            style={{ fontSize: 9 }}
-            axisLine={false}
-            tickSize={0}
-            dataKey="name"
-            height={15}
-            dy={10}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function CustomersTable() {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-        </TableRow>
-      </TableHeader>
-
-      <TableBody>
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'up'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'stale'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell></TableCell>
-          <TableCell>
-            <Tile.Badge trend={'up'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'down'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
-  );
-  }
 }

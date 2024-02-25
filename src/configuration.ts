@@ -9,7 +9,7 @@ enum Themes {
 
 const configuration = {
   site: {
-    name: 'Tristate Union Benefits',
+    name: 'TUBC Admin Dashboard',
     description: 'Admin',
     themeColor: '#ffffff',
     themeColorDark: '#0a0a0a',

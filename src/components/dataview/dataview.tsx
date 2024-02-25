@@ -1,235 +1,280 @@
-import { Line, ResponsiveContainer, LineChart, XAxis } from 'recharts';
-import { useEffect, useMemo, useState } from 'react';
 
-import Tile from '~/core/ui/Tile';
-import Heading from '~/core/ui/Heading';
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/core/ui/Table';
-
-import { useUserSession } from '~/core/hooks/use-user-session';
-import { Title } from '@radix-ui/react-dialog';
-
-export default function DataviewPage() {
-  const mrr = useMemo(() => generateDemoData(), []);
-  const visitors = useMemo(() => generateDemoData(), []);
-  const returningVisitors = useMemo(() => generateDemoData(), []);
-  const churn = useMemo(() => generateDemoData(), []);
-  const netRevenue = useMemo(() => generateDemoData(), []);
-  const fees = useMemo(() => generateDemoData(), []);
-  const newCustomers = useMemo(() => generateDemoData(), []);
-  const tickets = useMemo(() => generateDemoData(), []);
-  const activeUsers = useMemo(() => generateDemoData(), []);
-  const [documents, setDocuments] = useState<Document[]>([]);
+import { useEffect, useState } from 'react';
+import { initialize, document } from '@ironcorelabs/ironweb';
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
+import Button from '~/core/ui/Button';
+import { Timestamp } from "firebase/firestore";
+export default function DownloadPage() {
+  const [isSdkInitialized, setSdkInitialized] = useState(false);
+  const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
+  const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string }[]>([]);
+          const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
+          const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+          const [currentSubCategory, setCurrentSubCategory] = useState<string | string[] | null>(null);        
+  useEffect(() => {
+    initialize(
+      () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
+        .then(response => response.text()),
+      () => Promise.resolve('testpassword'),
+    )
+    .then(() => setSdkInitialized(true))
+    .catch((error: Error) => console.error('Error initializing IronWeb SDK:', error));
+  }, []);
 
   useEffect(() => {
-    fetch('/api/data/data')
-      .then(response => response.json())
-      .then(setDocuments);
-  }, []);
-  const L831Documents = documents
-  .filter(document => document.title.includes('L831'))
-  .sort((a, b) => {
-    const dateA = new Date(a.title.split(" ").pop() || "");
-    const dateB = new Date(b.title.split(" ").pop() || "");
-    return dateB.getTime() - dateA.getTime();
-  });
+    const fetchAndDecryptData = async () => {
+      if (!isSdkInitialized || !currentCategory) return;
+    
+      const auth = getAuth();
+      const user = auth.currentUser;
+      let userName = null;
+    
+      if (user) {
+        const db = getFirestore();
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+    
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as { userName: string };
+          userName = userData.userName;
+        }
+      }
+    
+      if (!userName) {
+        console.error('No user is currently logged in or userName is not set');
+        return;
+      }
+    
+      const requestBody = {
+        userName: userName,
+        categories: selectedSubCategories,
+      };
+      const response = await fetch(`/api/decrypt/decrypt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const groups = await response.json();
+    
+      for (const group of groups) {
+        if (group.url && group.image) {
+          const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
+          const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
+          const timestampObject = group.timestamp;
+          const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
+          const date = new Date(timestampMilliseconds);
+          console.log(`Date for group ${group.id}:`, date);
+          let documentId, imageId;
+    
+          try {
+            documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
+            imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
+          } catch (error) {
+            console.error(`Error getting document ID for group ${group.id}:`, error);
+            continue;
+          }
+    
+          if (documentId && imageId) {
+            const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
+            const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
+            const decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
+            const decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
+          
+            selectedSubCategories.forEach(subCategory => {
+              // Check if the document for the current subcategory is already in the newData state
+              if (!newData.some(data => data.subCategory === subCategory)) {
+                setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: subCategory }]);
+              }
+            });
+          } else {
+            console.error(`Document ID is null for group ${group.id}`);
+          }
+        } else {
+          console.error(`URL or image is missing for group ${group.id}`);
+        }
+      }
+    };
+    fetchAndDecryptData();
+  }, [isSdkInitialized, selectedSubCategories]);
 
-const COBADocuments = documents
-  .filter(document => document.title.includes('COBA'))
-  .sort((a, b) => {
-    const dateA = new Date(a.title.split(" ").pop() || "");
-    const dateB = new Date(b.title.split(" ").pop() || "");
-    return dateB.getTime() - dateA.getTime();
-  });
-
-
-  return (
-    <div className={'flex flex-col space-y-6 pb-36'}>
-      <UserGreetings />
-      <p>ADMIN REPORTS</p>
+  const filterDataByMonth = (data: { id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
+    if (selectedMonths.length === 0) return data;
+    return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
+  };
   
-      <div className={'mb-8'}>
-  <h2 className={'mb-4'}>L831 Documents</h2>
-  <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-    {L831Documents.map((document, index) => (
-      <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
-        <Tile className="flex-grow">
-          <div className="text-center font-bold text-sm mb-2">
-            <div className="text-sm">
-              <Tile.Heading>{document.title}</Tile.Heading>
-            </div>
-          </div>
-          <div className="px-6 py-4">
-            <Tile.Body>
-              <a href={document.URL} download>
-                <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                  Download
-                </button>
-              </a>
-            </Tile.Body>
-          </div>
-        </Tile>
-      </div>
-    ))}
-  </div>
-</div>
-
-<div className={'mb-8'}>
-  <h2 className={'mb-4'}>COBA Documents</h2>
-  <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}>
-    {COBADocuments.map((document, index) => (
-      <div key={index} className="flex flex-col items-center justify-center w-full max-w-md p-4 bg-white shadow rounded-lg overflow-hidden mx-auto h-64">
-        <Tile className="flex-grow">
-          <div className="text-center font-bold text-sm mb-2">
-            <div className="text-sm">
-              <Tile.Heading>{document.title}</Tile.Heading>
-            </div>
-          </div>
-          <div className="px-6 py-4">
-            <Tile.Body>
-              <a href={document.URL} download>
-                <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                  Download
-                </button>
-              </a>
-            </Tile.Body>
-          </div>
-        </Tile>
-      </div>
-    ))}
-  </div>
-</div>
-    </div>
-  );
-function UserGreetings() {
-  const user = useUserSession();
-  const userDisplayName = user?.auth?.displayName ?? user?.auth?.email ?? '';
-
+  const mainCategories = ['COBA', 'L831'];
+  const subCategories = {
+    'COBA': ['EXCEL1', 'EXCEL3'],
+    'L831': ['EXCEL1', 'EXCEL2'],
+    'Financials': 'Financials2023',
+  };
+  const buttonStyle = {
+    backgroundColor: '#0000FF', /* Dark Blue */
+    border: 'none',
+    color: 'white',
+    padding: '15px 32px',
+    textAlign: 'center' as 'center',
+    textDecoration: 'none',
+    display: 'inline-block',
+    fontSize: '16px',
+    margin: '4px 2px',
+    cursor: 'pointer',
+    borderRadius: '12px', // This will make the edges rounded
+    boxShadow: '0px 8px 15px rgba(0, 0, 0, 0.1)', // This will add a shadow
+  };
+  const boxStyle = {
+    marginTop: '20px', 
+    marginBottom: '20px', 
+    border: '1px solid #0000FF', 
+    padding: '10px',
+    borderRadius: '15px', // This will make the border rounded
+    boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
+  };
   return (
     <div>
-      <Heading type={4}>Welcome Back, {userDisplayName}</Heading>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {mainCategories.map(category => (
+          <button style={buttonStyle} onClick={() => {
+            setCurrentCategory(category);
+            const subCategory = subCategories[category as keyof typeof subCategories];
+            setCurrentSubCategory(subCategory);
+          }}>{category}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {Array.from({ length: 12 }, (_, i) => i).map(month => (
+  <label style={buttonStyle}>
+    <input
+      type="checkbox"
+      checked={selectedMonths.includes(month)}
+      onChange={() => {
+        if (selectedMonths.includes(month)) {
+          setSelectedMonths(selectedMonths.filter(m => m !== month));
+        } else {
+          setSelectedMonths([...selectedMonths, month]);
+        }
+      }}
+    />
+    {new Date(0, month).toLocaleString('default', { month: 'long' })}
+  </label>
+))}
+</div>
 
-      <p className={'text-gray-500 dark:text-gray-400'}>
-        <span>Here&apos;s what is happening across your business</span>
-      </p>
-    </div>
+<button style={buttonStyle} onClick={() => setSelectedMonths([])}>
+  Clear selected months
+</button>
+{currentCategory && (
+        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+          {Array.isArray(subCategories[currentCategory as keyof typeof subCategories]) 
+            ? (subCategories[currentCategory as keyof typeof subCategories] as string[]).map((subCategory: string) => (
+              <label style={buttonStyle}>
+                <input
+                  type="checkbox"
+                  checked={selectedSubCategories.includes(subCategory)}
+                  onChange={() => {
+                    console.log('Subcategory clicked:', subCategory);
+                    if (selectedSubCategories.includes(subCategory)) {
+                      setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
+                    } else {
+                      setSelectedSubCategories([...selectedSubCategories, subCategory]);
+                    }
+                  }}
+                />
+                {subCategory}
+              </label>
+            ))
+            : (
+              <label style={buttonStyle}>
+                <input
+                  type="checkbox"
+                  checked={selectedSubCategories.includes(subCategories[currentCategory as keyof typeof subCategories] as string)}
+                  onChange={() => {
+                    const subCategory = subCategories[currentCategory as keyof typeof subCategories] as string;
+                    console.log('Subcategory clicked:', subCategory);
+                    if (selectedSubCategories.includes(subCategory)) {
+                      setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
+                    } else {
+                      setSelectedSubCategories([...selectedSubCategories, subCategory]);
+                    }
+                  }}
+                />
+                {subCategories[currentCategory as keyof typeof subCategories]}
+              </label>
+      )
+    }
+  </div>
+)}
+ {selectedSubCategories.length > 0 && (
+  <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: '20px', padding: '10px' }}>
+    <h2 style={{ marginRight: '10px' }}>Selected Subcategories:</h2>
+    {selectedSubCategories.map(subCategory => (
+      <label style={{ ...buttonStyle, textAlign: 'left' as 'left', display: 'flex', alignItems: 'center', marginBottom: '10px', marginRight: '10px' }}>
+        <input
+          type="checkbox"
+          checked={selectedSubCategories.includes(subCategory)}
+          onChange={() => {
+            console.log('Subcategory clicked:', subCategory);
+            if (selectedSubCategories.includes(subCategory)) {
+              setSelectedSubCategories(selectedSubCategories.filter(sc => sc !== subCategory));
+            } else {
+              setSelectedSubCategories([...selectedSubCategories, subCategory]);
+            }
+          }}
+        />
+        {subCategory}
+      </label>
+    ))}
+  </div>
+)}
+<h2 style={{ marginTop: '20px' }}>Document Queue:</h2>
+
+<h2>L831</h2>
+{selectedSubCategories.map(subCategory => {
+  let filteredData = newData.filter(data => 
+    data.subCategory === subCategory && 
+    data.category.includes('L831')
   );
-}
-
-function generateDemoData() {
-  const today = new Date();
-
-  const formatter = new Intl.DateTimeFormat('en-us', {
-    month: 'long',
-    year: '2-digit',
-  });
-
-  const data: { value: string; name: string }[] = [];
-
-  for (let n = 8; n > 0; n -= 1) {
-    const date = new Date(today.getFullYear(), today.getMonth() - n, 1);
-
-    data.push({
-      name: formatter.format(date) as string,
-      value: (Math.random() * 10).toFixed(1),
-    });
+  filteredData = filterDataByMonth(filteredData);
+  if (filteredData.length === 0) {
+    return <p key={subCategory}>No data available for {subCategory}</p>
   }
-
-  return [data, data[data.length - 1].value] as [typeof data, string];
-}
-
-function Chart(
-  props: React.PropsWithChildren<{ data: { value: string; name: string }[] }>,
-) {
-  return (
-    <div className={'h-36'}>
-      <ResponsiveContainer width={'100%'} height={'100%'}>
-        <LineChart data={props.data}>
-          <Line
-            className={'text-primary'}
-            type="monotone"
-            dataKey="value"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            dot={false}
-          />
-
-          <XAxis
-            style={{ fontSize: 9 }}
-            axisLine={false}
-            tickSize={0}
-            dataKey="name"
-            height={15}
-            dy={10}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+  return filteredData.map((data, index) => (
+    <div key={index} style={boxStyle}>
+      <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+      <p>Decrypted data for ID {data.id}: </p>
+      <p>Decrypted image title: {data.image}</p>
+      <a href={data.url} download target="_blank">
+        <button style={buttonStyle}>Download</button>
+      </a>
     </div>
+  ));
+})}
+
+<h2>COBA</h2>
+{selectedSubCategories.map(subCategory => {
+  let filteredData = newData.filter(data => 
+    data.subCategory === subCategory && 
+    data.category.includes('COBA')
   );
-}
-
-function CustomersTable() {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-          <TableHead>Placeholder</TableHead>
-        </TableRow>
-      </TableHeader>
-
-      <TableBody>
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'up'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'stale'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell></TableCell>
-          <TableCell>
-            <Tile.Badge trend={'up'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-
-        <TableRow>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>Placeholder</TableCell>
-          <TableCell>
-            <Tile.Badge trend={'down'}>Placeholder</Tile.Badge>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+  filteredData = filterDataByMonth(filteredData);
+  if (filteredData.length === 0) {
+    return <p key={subCategory}>No data available for {subCategory}</p>
+  }
+  return filteredData.map((data, index) => (
+    <div key={index} style={boxStyle}>
+      <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+      <p>Decrypted data for ID {data.id}: </p>
+      <p>Decrypted image title: {data.image}</p>
+      <a href={data.url} download target="_blank">
+        <button style={buttonStyle}>Download</button>
+      </a>
+    </div>
+  ));
+})}
+</div>
   );
-}
 }

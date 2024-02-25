@@ -36,11 +36,13 @@ export const SignIn = () => {
   const shouldVerifyEmail = useShouldVerifyEmail();
 
   const onSignIn = useCallback(async () => {
+    if (auth.currentUser) {
+      console.log("User ID:", auth.currentUser.uid); // Log the user ID
+    }
+  
     const path = getRedirectPathWithoutSearchParam(appHome);
-
     return router.replace(path);
-  }, [router]);
-
+  }, [router, auth]);
   // force user signOut if the query parameter has been passed
   useEffect(() => {
     if (shouldForceSignOut) {
