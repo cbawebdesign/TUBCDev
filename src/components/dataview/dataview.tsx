@@ -108,12 +108,13 @@ export default function DownloadPage() {
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
   };
   
-  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE'];
+  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING'];
   const subCategories = {
     'PAYFILE_RAW': 'PAYFILE_RAW',
     'PAYFILE_EXTRACTED': 'PAYFILE_EXTRACTED',
     'MISMATCHED_PREMIUMS': 'MISMATCHED_PREMIUMS',
     'USERS_NOT_IN_DATABASE': 'USERS_NOT_IN_DATABASE',
+    'ACTIVE_USERS_MISSING': 'ACTIVE_USERS_MISSING',
   };
   const buttonStyle = {
     backgroundColor: '#0000FF', /* Dark Blue */
@@ -145,34 +146,35 @@ export default function DownloadPage() {
     boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
   };
   return (
-    <div>
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {mainCategories.map(category => (
-          <button style={buttonStyle} onClick={() => {
-            setCurrentCategory(category);
-            const subCategory = subCategories[category as keyof typeof subCategories];
-            setCurrentSubCategory(subCategory);
-          }}>{category}</button>
-        ))}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {Array.from({ length: 12 }, (_, i) => i).map(month => (
-  <label style={buttonStyle}>
-    <input
-      type="checkbox"
-      checked={selectedMonths.includes(month)}
-      onChange={() => {
-        if (selectedMonths.includes(month)) {
-          setSelectedMonths(selectedMonths.filter(m => m !== month));
-        } else {
-          setSelectedMonths([...selectedMonths, month]);
-        }
-      }}
-    />
-    {new Date(0, month).toLocaleString('default', { month: 'long' })}
-  </label>
-))}
-</div>
+<div>
+<h1 style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px', fontSize: '20px', fontWeight: 'bold', textDecoration: 'underline' }}>TUBC Document Hub</h1>
+    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '20px' }}>
+      {mainCategories.map(category => (
+        <button style={buttonStyle} onClick={() => {
+          setCurrentCategory(category);
+          const subCategory = subCategories[category as keyof typeof subCategories];
+          setCurrentSubCategory(subCategory);
+        }}>{category}</button>
+      ))}
+    </div>
+    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+    {Array.from({ length: 12 }, (_, i) => i).map(month => (
+      <label style={{ ...buttonStyle, fontSize: '1.1em', backgroundColor: '#208D57', padding: '10px', borderRadius: '5px' }}>
+        <input
+          type="checkbox"
+          checked={selectedMonths.includes(month)}
+          onChange={() => {
+            if (selectedMonths.includes(month)) {
+              setSelectedMonths(selectedMonths.filter(m => m !== month));
+            } else {
+              setSelectedMonths([...selectedMonths, month]);
+            }
+          }}
+        />
+        {new Date(0, month).toLocaleString('default', { month: 'long' })}
+      </label>
+    ))}
+    </div>
 
 <button style={buttonStyle} onClick={() => setSelectedMonths([])}>
   Clear selected months
@@ -249,7 +251,6 @@ export default function DownloadPage() {
             return filteredData.map((data, index) => (
               <div key={index} style={boxStyle}>
                 <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
-                <p>Decrypted data for ID {data.id}: </p>
                 <p>Decrypted image title: {data.image}</p>
                 <a href={data.url} download target="_blank">
                   <button style={buttonStyle}>Download</button>
@@ -288,7 +289,7 @@ export default function DownloadPage() {
               <div key={index} style={boxStyle}>
                 <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
                 <p>Decrypted data for ID {data.id}:</p>
-                <p>Decrypted image title: {data.image}</p>
+                <p>Document title: {data.image}</p>
                 <a href={data.url} download target="_blank">
                   <button style={buttonStyle}>Download</button>
                 </a>
