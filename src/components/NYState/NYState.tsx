@@ -5,13 +5,15 @@ import { initialize, document } from '@ironcorelabs/ironweb';
 export default function UploadPage() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [isSdkInitialized, setSdkInitialized] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0); // Add this line
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string, group: string }[]>([]);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string>('');
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
-  const categories = ['L831', 'COBA', 'CAS23Q3', 'CAS23Q2'];
+  const categories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE'];
   const [hasError, setHasError] = useState(false);
+  const [union, setUnion] = useState<string>('');
+  const unionOptions = ['COBA', 'L831'];
 
   useEffect(() => {
     initialize(
@@ -27,13 +29,16 @@ export default function UploadPage() {
     setFiles(event.target.files);
   };
 
+  const handleUnionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUnion(event.target.value);
+  };
+
   const handleUpload = async () => {
     if (!files || !isSdkInitialized) return;
-// Check if a category is selected
-if (!selectedCategories) {
-  alert('Please select a category before uploading.');
-  return;
-}
+    if (!selectedCategories) {
+      alert('Please select a category before uploading.');
+      return;
+    }
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const storage = getStorage();
@@ -44,7 +49,7 @@ if (!selectedCategories) {
       uploadTask.on('state_changed', 
         (snapshot) => {
           var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress); // Update the progress
+          setUploadProgress(progress);
           console.log('Upload is ' + progress + '% done');
         }, 
         (error) => {
@@ -54,26 +59,15 @@ if (!selectedCategories) {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log('File available at', downloadURL);
 
-          // Convert the download URL string to a Uint8Array
           const urlUint8Array = new TextEncoder().encode(downloadURL);
-
-          // Encrypt the URL
           const encryptedUrlResult = await document.encrypt(urlUint8Array);
-
-          // Convert the encrypted URL to a base64 string
           const encryptedUrl = btoa(String.fromCharCode(...new Uint8Array(encryptedUrlResult.document)));
 
-          // Convert the fileName to a Uint8Array
           const fileNameUint8Array = new TextEncoder().encode(file.name);
-
-          // Encrypt the fileName
           const encryptedFileNameResult = await document.encrypt(fileNameUint8Array);
-
-          // Convert the encrypted fileName to a base64 string
           const encryptedFileName = btoa(String.fromCharCode(...new Uint8Array(encryptedFileNameResult.document)));
 
-          // Make a request to your API to update the group document
-          const response = await fetch('/api/uploads/uploads', {
+          const response = await fetch          ('/api/uploads/uploads', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -81,37 +75,36 @@ if (!selectedCategories) {
             body: JSON.stringify({
               fileName: encryptedFileName,
               url: encryptedUrl,
-              originalFileName: file.name, // Send the original file name
-              categories: selectedCategories, // Send the selected categories
+              originalFileName: file.name,
+              categories: selectedCategories,
+              union: union,
             }),
           });
-// In your API request, add the error message to the uploadErrors array
-if (!response.ok) {
-  const errorData = await response.json();
-  setUploadErrors(prevErrors => [...prevErrors, errorData.error]);
-  setHasError(true); // Set hasError to true
-} else {
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            setUploadErrors(prevErrors => [...prevErrors, errorData.error]);
+            setHasError(true);
+          } else {
             const data = await response.json();
             console.log(data);
-            // After a file is uploaded, add its name to the state
             setUploadedFiles(prevFiles => [...prevFiles, { fileName: file.name, group: data.group }]);
-            // Set uploadSuccess to true
             setUploadSuccess(true);
           }
         }
       );
     }
   };
+
   const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
     if (checked) {
       setSelectedCategories(name);
-
     } else {
       setSelectedCategories('');
     }
   };
-  const buttonStyle = {
+const buttonStyle = {
     backgroundColor: '#0000FF', /* Dark Blue */
     border: 'none',
     color: 'white',
@@ -142,8 +135,7 @@ if (!response.ok) {
   };
   const checkboxStyle = {
     backgroundColor: '#ffffff',
-  };
-  return (
+  };  return (
     <div style={{ marginTop: '50px' }}>
       <input 
         type="file" 
@@ -155,36 +147,57 @@ if (!response.ok) {
       <label htmlFor="fileInput" style={buttonStyle}>Choose Files</label>
       <button style={buttonStyle} onClick={handleUpload}>Upload</button>
   
-      {/* Add the checkboxes here */}
       <div>
         {categories.map((category, index) => (
-    <div key={index} style={categoryStyle}>
-    <input 
+          <div key={index} style={categoryStyle}>
+            <input 
               type="checkbox" 
               id={`category-${index}`} 
               name={category} 
               onChange={handleCategoryChange}
               style={buttonStyle}
             />
-      <label htmlFor={`category-${index}`} style={{ color: '#000000' }}>{category}</label>
+            <label htmlFor={`category-${index}`} style={{ color: '#000000' }}>{category}</label>
           </div>
         ))}
       </div>
-  
+
+      <div>
+        <h3>Union:</h3>
+        {unionOptions.map((option, index) => (
+          <div key={index}>
+            <input 
+              type="radio" 
+              id={`union-${index}`} 
+              name="union" 
+              value={option} 
+              onChange={handleUnionChange}
+            />
+            <label htmlFor={`union-${index}`}>{option}</label>
+          </div>
+        ))}
+      </div>
+
       <div style={{ marginTop: '20px' }}>
         <progress value={uploadProgress} max="100" style={{ width: '50%', height: '20px', borderRadius: '10px', overflow: 'hidden' }} />
       </div>
+
       {uploadSuccess && <p style={{ color: 'green' }}>Upload successful!</p>}
-{hasError && uploadErrors.map((error, index) => (
-  <p key={index} style={{ color: 'red' }}>{error}</p> // Display the error messages in red
-))}     <div>
+      {hasError && uploadErrors.map((error, index) => (
+        <p key={index} style={{ color: 'red' }}>{error}</p>
+      ))}
+
+      <div>
         <h2 style={{ marginTop: '20px' }}>Uploaded files:</h2>
         {uploadedFiles.map((file, index) => (
-  <div key={index} style={uploadedFileStyle}>
-    <h2 style={{ color: '#0000FF' }}>File: {file.fileName}</h2>
-    <p>Group: {file.group}</p>
-  </div>
-))}
+          <div key={index} style={uploadedFileStyle}>
+            <h2 style={{     color: '#0000FF' 
+            }}>
+              File: {file.fileName}
+            </h2>
+            <p>Group: {file.group}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

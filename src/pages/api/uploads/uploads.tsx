@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore,serverTimestamp, doc, setDoc, getDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
 
 const firebaseConfig = {
@@ -27,8 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const originalFileName = req.body.originalFileName; // Get the original file name
       const encryptedUrl = req.body.url;
       const categories = req.body.categories; // Get the categories from the request body
+      const union = req.body.union; // Get the categories from the request body
 
-      const docName = originalFileName.split(' - ').pop().replace('.pdf', '');
+      const docName = union;
       console.log('Document name:', docName);
 
       // Fetch the group document
@@ -48,7 +49,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           image: encryptedFileName, // Use the encrypted fileName here
           downloadURL: encryptedUrl,
           users: members,
-          categories: categories // Add the categories field
+          categories: categories, // Add the categories field
+          timestamp: serverTimestamp(),// Add the timestamp field
+          union: union
+
         });
 
         res.status(200).json({ message: 'File uploaded successfully', group: docName});

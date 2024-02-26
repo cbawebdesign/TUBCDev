@@ -108,11 +108,12 @@ export default function DownloadPage() {
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
   };
   
-  const mainCategories = ['TEST', 'TEST2'];
+  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE'];
   const subCategories = {
-    'TEST': 'TEST',
-    'TEST2': 'TEST2',
-    'Financials': 'Financials2023',
+    'PAYFILE_RAW': 'PAYFILE_RAW',
+    'PAYFILE_EXTRACTED': 'PAYFILE_EXTRACTED',
+    'MISMATCHED_PREMIUMS': 'MISMATCHED_PREMIUMS',
+    'USERS_NOT_IN_DATABASE': 'USERS_NOT_IN_DATABASE',
   };
   const buttonStyle = {
     backgroundColor: '#0000FF', /* Dark Blue */
