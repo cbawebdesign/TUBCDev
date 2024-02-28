@@ -38,9 +38,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       let users = snapshot.docs.map((doc: { id: any; data: () => any; }) => ({ id: doc.id, ...doc.data() }));
 
       if (query !== '') {
-        users = users.filter((user: any) => user.Name.startsWith(query));
+        const lowerCaseQuery = query.toLowerCase();
+        users = users.filter((user: any) => user.Name.toLowerCase().includes(lowerCaseQuery));
       }
-
       res.status(200).json(users);
     } catch (error) {
       console.error('Error fetching users:', error);
