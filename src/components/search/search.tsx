@@ -112,7 +112,7 @@ export default function SearchPage() {
           <option value="L831">L831</option>
         </select>
 
-        <button type="submit" className={styles.submitButton} onClick={() => setLimit(20)}>
+        <button type="submit" className={styles.submitButton} onClick={() => setLimit(2000)}>
           Search
         </button>
       </form>

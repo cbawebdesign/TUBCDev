@@ -2,31 +2,47 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUsersCollection } from 'src/lib/server/collections';
+type CaseNote = {
+  note: string;
+  timestamp: Date;
+};
+
+type UserData = {
+  // other properties...
+  CaseNotes?: CaseNote[];
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const userId = req.query.userId as string; // Get the user ID from the URL
     console.log('Updating user with ID:', userId); // Log the user ID
 
-    const { ChangeDate,Status, FirstName, PreviousTotalPremium, MarkifBW, MM,union, spouse, startdate, LastName, LM, CurrentTotalPremium, CaseNotes } = req.body; // Extract the new values from the request body
+    // Fetch the user document from the database
+    const userDoc = await getUsersCollection().doc(userId).get();
 
-    // Create an object with only the fields that are not undefined
-    const updateData: Partial<{ ChangeDate:any;FirstName:any; MarkifBW:any; PreviousTotalPremium:any; Status:any;MM: any; union: any; spouse: any; CurrentTotalPremium: any; startdate: any; LM: any; CaseNotes:any;LastName: any; }> = {};
-    if (union !== undefined) updateData.union = union;
-    if (spouse !== undefined) updateData.spouse = spouse;
-    if (startdate !== undefined) updateData.startdate = startdate;
-    if (LastName !== undefined) updateData.LastName = LastName;
-    if (union !== undefined) updateData.union = union;
-    if (CaseNotes !== undefined) updateData.CaseNotes = CaseNotes;
-    if (LM !== undefined) updateData.LM = LM;
-    if (MM !== undefined) updateData.MM = MM;
-    if (MarkifBW !== undefined) updateData.MarkifBW = MarkifBW;
-    if (PreviousTotalPremium !== undefined) updateData.PreviousTotalPremium = union;
-    if (FirstName !== undefined) updateData.FirstName = FirstName;
-    if (Status !== undefined) updateData.Status = Status;
-    if (ChangeDate !== undefined) updateData.ChangeDate = ChangeDate;
-    if (CurrentTotalPremium !== undefined) updateData.CurrentTotalPremium = union;
+    // Get the current data
+    const userData = userDoc.data() as UserData;
 
+    // Check if userData is undefined
+    if (!userData) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Copy all properties from req.body to updateData
+    const updateData = {
+      ...userData,
+      ...req.body,
+      CaseNotes: userData.CaseNotes || []
+    };
+
+   // Append the new case note to the updateData.CaseNotes array if it's not undefined
+if (req.body.CaseNotes !== undefined) {
+  updateData.CaseNotes.push({
+    note: req.body.CaseNotes,
+    timestamp: new Date()
+  });
+}
     try {
       // Update the user document in the database
       await getUsersCollection().doc(userId).set(updateData, { merge: true });

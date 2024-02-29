@@ -48,6 +48,7 @@ import ReactivateUserModal from '~/components/admin/users/ReactivateUserModal';
 import RoleBadge from '~/components/organizations/RoleBadge';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import Textarea from '~/core/ui/Textarea';
 
 interface SearchResult {
   union: string;
@@ -439,7 +440,7 @@ function UserAdminPage({
       <div style={{ width: '30%', marginBottom: '20px' }}>
         <TextField.Label>
           Case Notes
-          <TextField.Input
+          <Textarea
             className={'max-w-sm'}
             value={CaseNotesInput}
             onChange={(e) => setCaseNotesInput((e.target as HTMLInputElement).value)}
@@ -464,19 +465,20 @@ function UserAdminPage({
         <TextField.Label>
   Status
   <div className="relative inline-block w-full text-gray-700 w-64"> {/* Adjust the width here */}
-    <select
-      className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
-      value={StatusInput}
-      onChange={(e) => setStatusInput((e.target as HTMLSelectElement).value)}
-    >
-      <option value="Termed">Termed</option>
-      <option value="Retired">Retired</option>
-      <option value="On Leave">On Leave</option>
-      <option value="Military Leave">Military Leave</option>
-      <option value="Not Eligible">Not Eligible</option>
-      <option value="Suspended">Suspended</option>
-      <option value="Cancelled">Cancelled</option>
-    </select>
+  <select
+  className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
+  value={StatusInput}
+  onChange={(e) => setStatusInput((e.target as HTMLSelectElement).value)}
+>
+  <option value="">Select a status</option>
+  <option value="Termed">Termed</option>
+  <option value="Retired">Retired</option>
+  <option value="On Leave">On Leave</option>
+  <option value="Military Leave">Military Leave</option>
+  <option value="Not Eligible">Not Eligible</option>
+  <option value="Suspended">Suspended</option>
+  <option value="Cancelled">Cancelled</option>
+</select>
     <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
       <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
         <path d="M7 7a1 1 0 011.707-.707l3.586 3.586a1 1 0 01-1.414 1.414l-3.586-3.586A1 1 0 017 7z" />
