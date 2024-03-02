@@ -64,6 +64,8 @@ interface SearchResult {
   Status:string;
   MarkifBW:string;
   PreviousTotalPremium:string;
+  PolicyEffectiveDate:string;
+  DeductionStatus:string;
   MM:string;
   Files: {
     title: string;
@@ -135,6 +137,8 @@ function UserAdminPage({
     const [showAllNotes, setShowAllNotes] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const [CurrentTotalPremiumHistory, setCurrentTotalPremiumHistory] = useState<{ timestamp: string; amount: number; }[]>([]);
+    const [PolicyEffectiveDateInput, setPolicyEffectiveDateInput] = useState('');
+const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     useEffect(() => {
       const fetchUsers = async () => {
         const requestBody = {
@@ -184,7 +188,8 @@ function UserAdminPage({
         setCurrentTotalPremiumInput(currentUser.CurrentTotalPremium);
         setSpouseInput(currentUser.spouse);
         setCurrentTotalPremiumHistory(currentUser.CurrentTotalPremiumHistory);
-
+        setPolicyEffectiveDateInput(currentUser.PolicyEffectiveDate);
+        setDeductionStatusInput(currentUser.DeductionStatus);
         setStartDateInput(currentUser.StartDate);
         setLastNameInput(currentUser.LastName);
         setLMInput(currentUser.LM);
@@ -197,7 +202,7 @@ function UserAdminPage({
 
       }
     }, [searchResults, user.uid]);
-    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string) => {
+    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string, PolicyEffectiveDate: string, DeductionStatus: string) => {
       try {
         const requestBody = {
           union: union,
@@ -210,6 +215,8 @@ function UserAdminPage({
           Status: Status,
           uid: uid,
           ChangeDate: ChangeDate,
+          PolicyEffectiveDate: PolicyEffectiveDate,
+      DeductionStatus: DeductionStatus,
         };
         console.log(requestBody); // Add this line
         console.log('Updating user with ID:', user.uid);
@@ -361,7 +368,7 @@ function UserAdminPage({
       key={searchResult.id} 
       onSubmit={(e) => { 
         e.preventDefault(); 
-        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput);       }}
+        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput, PolicyEffectiveDateInput, DeductionStatusInput);       }}
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
       <div style={{ width: '30%' }}>
@@ -474,11 +481,11 @@ function UserAdminPage({
      
       <div style={{ width: '30%', marginBottom: '20px' }}>
       <TextField.Label>
-          MarkifBW
+          Deduction Status
           <TextField.Input
             className={'max-w-sm'}
-            value={MarkifBWInput}
-            onChange={(e) => setMarkifBWInput((e.target as HTMLInputElement).value)}
+            value={DeductionStatusInput}
+            onChange={(e) => setDeductionStatusInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
         <TextField.Label>
@@ -506,7 +513,14 @@ function UserAdminPage({
     readOnly
   />
 </TextField.Label>
-        
+<TextField.Label>
+          Policy Effective Date
+          <TextField.Input
+            className={'max-w-sm'}
+            value={PolicyEffectiveDateInput}
+            onChange={(e) => setPolicyEffectiveDateInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
       </div>
       <br></br>
       <br></br>
@@ -587,7 +601,9 @@ function UserAdminPage({
             spouseInput,
             StartDateInput,
             LastNameInput,
-            ChangeDateInput
+            ChangeDateInput,
+            PolicyEffectiveDateInput,
+            DeductionStatusInput
           );
         }}
         className="space-y-4"
