@@ -14,7 +14,7 @@
   width: 80px;
   margin-right: 10px;
   padding: 5px;
-  color: blue;
+  color: rgb(255, 0, 238);
 }
 
 .dataInputRow {
@@ -55,7 +55,7 @@
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #3c07b7;
+  background-color: #FF00FF;
   color: white;
 }
 
@@ -68,7 +68,7 @@
   border-radius: 4px;
 }
 .submitButton {
-  background-color: #3c07b7; /* Green background */
+  background-color: #FF00FF; /* Green background */
   border: none; /* Remove border */
   color: white; /* White text */
   padding: 15px 32px; /* Padding */
@@ -83,8 +83,8 @@
 }
 
 .submitButton:hover {
-  background-color: rgb(100, 149, 237);  /* White background on hover */
-  color: black; /* Black text on hover */
+  background-color: rgb(0, 128, 128);  /* Teal background */
+    color: black; /* Black text on hover */
 }
 
 

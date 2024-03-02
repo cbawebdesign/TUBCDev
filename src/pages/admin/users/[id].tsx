@@ -55,7 +55,7 @@ interface SearchResult {
   uid: string; // Add the 'uid' property
   id:string;
   spouse: string;
-  startdate: string;
+  StartDate: string;
   LastName: string;
   FirstName: string;
   LM: string;
@@ -72,9 +72,17 @@ interface SearchResult {
   }[];
   ChangeDate:string;
   current_deduction:string;
+  CurrentTotalPremiumHistory: {
+    timestamp: string;
+    amount: number;
+  }[];
   premium_date: {
     date: string;
     premium: number;
+  }[];
+  CaseNotesHistory: {
+    note: string;
+    timestamp: string;
   }[];
   // Add other properties if necessary
 }
@@ -120,12 +128,13 @@ function UserAdminPage({
     const [StatusInput, setStatusInput] = useState('');
     const [FirstNameInput, setFirstNameInput] = useState('');
     const [spouseInput, setSpouseInput] = useState('');
-    const [startDateInput, setStartDateInput] = useState('');
+    const [StartDateInput, setStartDateInput] = useState('');
     const [LastNameInput, setLastNameInput] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [showAllNotes, setShowAllNotes] = useState(false);
     const [showAll, setShowAll] = useState(false);
-
+    const [CurrentTotalPremiumHistory, setCurrentTotalPremiumHistory] = useState<{ timestamp: string; amount: number; }[]>([]);
     useEffect(() => {
       const fetchUsers = async () => {
         const requestBody = {
@@ -174,9 +183,11 @@ function UserAdminPage({
         setCaseNotesInput(currentUser.CaseNotes);
         setCurrentTotalPremiumInput(currentUser.CurrentTotalPremium);
         setSpouseInput(currentUser.spouse);
-        setStartDateInput(currentUser.startdate);
+        setCurrentTotalPremiumHistory(currentUser.CurrentTotalPremiumHistory);
+
+        setStartDateInput(currentUser.StartDate);
         setLastNameInput(currentUser.LastName);
-        setLMInput(currentUser.spouse);
+        setLMInput(currentUser.LM);
         setMMInput(currentUser.MM);
         setChangeDateInput(currentUser.ChangeDate);
         setMarkifBWInput(currentUser.MarkifBW);
@@ -186,21 +197,21 @@ function UserAdminPage({
 
       }
     }, [searchResults, user.uid]);
-    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, startDate: string, LastName: string) => {
+    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string) => {
       try {
         const requestBody = {
           union: union,
           CaseNotes: CaseNotes,
           spouse: spouse,
-          startdate: startDate,
+          StartDate: StartDate,
           LastName: LastName,
           CurrentTotalPremium: CurrentTotalPremium,
-          LM:LM,
+          LM: LM,
           Status: Status,
           uid: uid,
-          
-
+          ChangeDate: ChangeDate,
         };
+        console.log(requestBody); // Add this line
         console.log('Updating user with ID:', user.uid);
 
         const response = await fetch(`/api/update-user/${user.uid}`, {
@@ -324,8 +335,8 @@ function UserAdminPage({
   
             <div className="space-y-4 max-w-md mx-auto">
   <input type="file" onChange={handleFileChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-  <button onClick={handleUpload} className="w-full px-3 py-2 bg-blue-500 text-white rounded-md">Upload</button>
-  <div className="relative pt-1">
+  <button onClick={handleUpload} className="w-full px-3 py-2 bg-fuchsia-500 text-white rounded-md">Upload</button>
+    <div className="relative pt-1">
     <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
       <div style={{ width: `${uploadProgress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
     </div>
@@ -350,8 +361,7 @@ function UserAdminPage({
       key={searchResult.id} 
       onSubmit={(e) => { 
         e.preventDefault(); 
-        updateUser(StatusInput,searchResult.id,CaseNotesInput, CurrentTotalPremiumInput, LMInput, unionInput, spouseInput, startDateInput, LastNameInput); 
-      }}
+        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput);       }}
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
       <div style={{ width: '30%' }}>
@@ -389,11 +399,12 @@ function UserAdminPage({
           />
         </TextField.Label>
         <TextField.Label>
-          MarkifBW
-          <TextField.Input
-            className={'max-w-sm'}
-            value={MarkifBWInput}
-            onChange={(e) => setMarkifBWInput((e.target as HTMLInputElement).value)}
+
+          Case Notes
+          <Textarea
+            className={'w-full'}
+            value={CaseNotesInput}
+            onChange={(e) => setCaseNotesInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
       </div>
@@ -411,7 +422,7 @@ function UserAdminPage({
           Start Date
           <TextField.Input
             className={'max-w-sm'}
-            value={startDateInput}
+            value={StartDateInput}
             onChange={(e) => setStartDateInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
@@ -429,37 +440,6 @@ function UserAdminPage({
             className={'max-w-sm'}
             value={MMInput}
             onChange={(e) => setMMInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
-        
-
-  {/* ... other TextField.Labels ... */}
-
-      </div>
-     
-      <div style={{ width: '30%', marginBottom: '20px' }}>
-        <TextField.Label>
-          Case Notes
-          <Textarea
-            className={'max-w-sm'}
-            value={CaseNotesInput}
-            onChange={(e) => setCaseNotesInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
-        <TextField.Label>
-          Current Total Premium
-          <TextField.Input
-            className={'max-w-sm'}
-            value={CurrentTotalPremiumInput}
-            onChange={(e) => setCurrentTotalPremiumInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
-        <TextField.Label>
-          Previous Total Premium
-          <TextField.Input
-            className={'max-w-sm'}
-            value={PreviousTotalPremiumInput}
-            onChange={(e) => setPreviousTotalPremiumInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
         <TextField.Label>
@@ -487,6 +467,37 @@ function UserAdminPage({
     </div>
   </div>
 </TextField.Label>
+
+  {/* ... other TextField.Labels ... */}
+
+      </div>
+     
+      <div style={{ width: '30%', marginBottom: '20px' }}>
+      <TextField.Label>
+          MarkifBW
+          <TextField.Input
+            className={'max-w-sm'}
+            value={MarkifBWInput}
+            onChange={(e) => setMarkifBWInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Current Total Premium
+          <TextField.Input
+            className={'max-w-sm'}
+            value={CurrentTotalPremiumInput}
+            onChange={(e) => setCurrentTotalPremiumInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+        <TextField.Label>
+          Previous Total Premium
+          <TextField.Input
+            className={'max-w-sm'}
+            value={PreviousTotalPremiumInput}
+            onChange={(e) => setPreviousTotalPremiumInput((e.target as HTMLInputElement).value)}
+          />
+        </TextField.Label>
+     
         <TextField.Label>
   Current NY Deduction
   <TextField.Input
@@ -518,6 +529,44 @@ function UserAdminPage({
     </button>
   )}
 </div>
+<div className="w-full lg:w-64">
+  <h2 className="text-2xl font-bold mb-4">CTP History</h2>
+  {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.slice(0, showAll ? searchResult.CurrentTotalPremiumHistory.length : 1).map((premium, index) => (
+    <div key={index} className="mb-5 w-full">
+      <TextField.Label>
+        <TextField.Input
+          className={'w-full'}
+          value={`Date: ${new Date(premium.timestamp).toLocaleDateString()}, Premium: ${premium.amount}`}
+          readOnly
+        />
+      </TextField.Label>
+    </div>
+  ))}
+{searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.length > 1 && (
+    <button onClick={() => setShowAll(!showAll)}>
+      {showAll ? 'Show Less' : 'Show More'}
+    </button>
+  )}
+</div>
+<div className="w-full lg:w-64">
+  <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
+  {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
+    <div key={index} className="mb-5 w-full">
+      <TextField.Label>
+        <TextField.Input
+          className={'w-full'}
+          value={`Date: ${new Date(note.timestamp).toLocaleDateString()}, Note: ${note.note}`}
+          readOnly
+        />
+      </TextField.Label>
+    </div>
+  ))}
+{searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.length > 1 && (
+    <button onClick={() => setShowAllNotes(!showAllNotes)}>
+      {showAllNotes ? 'Show Less' : 'Show More'}
+    </button>
+  )}
+</div>
 <hr className="my-8" />
 <div className="w-full lg:w-2/3">
   <h2 className="text-2xl font-bold mb-4">Uploaded Files</h2>
@@ -536,28 +585,29 @@ function UserAdminPage({
             CurrentTotalPremiumInput,
             unionInput,
             spouseInput,
-            startDateInput,
-            LastNameInput
+            StartDateInput,
+            LastNameInput,
+            ChangeDateInput
           );
         }}
         className="space-y-4"
       >
-          {searchResult.Files.map((file, index) => (
-            <div key={index} className="border p-4 rounded-md space-y-2 max-w-lg">
-              <label className="block">
-                <span className="text-gray-700">Title:</span>
-                <input type="text" value={file.title} readOnly className="mt-1 block w-full rounded-md border-gray-300" />
-              </label>
-              <label className="block">
-                <span className="text-gray-700">Date:</span>
-                <input type="text" value={file.date} readOnly className="mt-1 block w-full rounded-md border-gray-300" />
-              </label>
-              <label className="block">
-                <span className="text-gray-700">URL:</span>
-                <a href={file.url} download className="mt-1 inline-block px-4 py-2 bg-blue-500 text-white rounded-md">Download File</a>
-              </label>
-            </div>
-          ))}
+      {searchResult.Files.map((file, index) => (
+  <div key={index} className="border p-4 rounded-md space-y-2 max-w-lg">
+    <label className="block">
+      <span className="text-black-700 dark:text-white">Title:</span>
+      <input type="text" value={file.title} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white" />
+    </label>
+    <label className="block">
+      <span className="text-black-700 dark:text-white">Date:</span>
+      <input type="text" value={file.date} readOnly className="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:text-white" />
+    </label>
+    <label className="block">
+      <span className="text-black-700 dark:text-white">URL:</span>
+      <a href={file.url} download className="mt-1 inline-block px-4 py-2 bg-blue-500 text-white rounded-md">Download File</a>
+    </label>
+  </div>
+))}
           {/* rest of your form fields... */}
         </form>
       );

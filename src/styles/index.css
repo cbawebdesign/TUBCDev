@@ -10,19 +10,19 @@
         --card-foreground: 224 71.4% 4.1%;
         --popover: 0 0% 100%;
         --popover-foreground: 224 71.4% 4.1%;
-        --primary: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --primary: 330 100% 50%; /* Hot pink */
         --primary-foreground: 210 20% 98%;
-        --secondary: 220 14.3% 95.9%;
+        --secondary: 300 100% 50%; /* Fuchsia */
         --secondary-foreground: 220.9 39.3% 11%;
         --muted: 220 14.3% 95.9%;
         --muted-foreground: 220 8.9% 46.1%;
-        --accent: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --accent: 300 100% 50%; /* Fuchsia */
         --accent-foreground: 220.9 39.3% 11%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 210 20% 98%;
-        --border: 220 13% 91%;
+        --border: 300 100% 50%; /* Fuchsia */
         --input: 220 13% 91%;
-        --ring: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --ring: 300 100% 50%; /* Fuchsia */ /* Updated from purple to dark blue */
         --radius: 0.5rem;
     }
 
@@ -33,19 +33,19 @@
         --card-foreground: 210 20% 98%;
         --popover: 224 71.4% 4.1%;
         --popover-foreground: 210 20% 98%;
-        --primary: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --primary: 330 100% 50%; /* Hot pink */
         --primary-foreground: 210 20% 98%;
-        --secondary: 215 27.9% 16.9%;
+        --secondary: 300 100% 50%; /* Fuchsia */
         --secondary-foreground: 210 20% 98%;
         --muted: 215 27.9% 16.9%;
         --muted-foreground: 217.9 10.6% 64.9%;
-        --accent: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --accent:300 100% 50%; 
         --accent-foreground: 210 20% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 210 20% 98%;
-        --border: 215 27.9% 16.9%;
+        --border: 300 100% 50%; /* Fuchsia */
         --input: 215 27.9% 16.9%;
-        --ring: 240 70% 50.4%; /* Updated from purple to dark blue */
+        --ring: 300 100% 50%; /* Fuchsia */ 
     }
 }
 

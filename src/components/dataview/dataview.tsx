@@ -117,7 +117,7 @@ export default function DownloadPage() {
     'ACTIVE_USERS_MISSING': 'ACTIVE_USERS_MISSING',
   };
   const buttonStyle = {
-    backgroundColor: '#0000FF', /* Dark Blue */
+    backgroundColor: '#FF00FF', /* Fuchsia */
     border: 'none',
     color: 'white',
     padding: '15px 32px',
@@ -133,13 +133,13 @@ export default function DownloadPage() {
   const boxStyle = {
     marginTop: '20px', 
     marginBottom: '20px', 
-    border: '1px solid #0000FF', 
+    border: '1px solid #FF00FF', 
     padding: '10px',
     borderRadius: '15px', // This will make the border rounded
     boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
   };
   const sectionStyle = {
-    border: '1px solid #0000FF',
+    border: '1px solid #FF00FF',
     borderRadius: '10px',
     padding: '10px',
     margin: '20px 0',
@@ -159,7 +159,7 @@ export default function DownloadPage() {
     </div>
     <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
     {Array.from({ length: 12 }, (_, i) => i).map(month => (
-      <label style={{ ...buttonStyle, fontSize: '1.1em', backgroundColor: '#208D57', padding: '10px', borderRadius: '5px' }}>
+      <label style={{ ...buttonStyle, fontSize: '1.1em', backgroundColor: '#008080', padding: '10px', borderRadius: '5px' }}>
         <input
           type="checkbox"
           checked={selectedMonths.includes(month)}
@@ -224,7 +224,7 @@ export default function DownloadPage() {
   <div>
   <div style={{ display: 'inline-block', borderBottom: '2px solid black', paddingBottom: '5px' }}>
   <h2 style={{ marginTop: '20px', fontSize: '25px', fontWeight: 'bold' }}>Document Queue:</h2>
-</div>    <div style={{...sectionStyle, border: '1px solid blue', padding: '10px', margin: '10px'}}>     
+</div>    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>     
 
       <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
         L831 
@@ -262,7 +262,7 @@ export default function DownloadPage() {
       )}
     </div>
 
-    <div style={{...sectionStyle, border: '1px solid blue', padding: '10px', margin: '10px'}}>
+    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
       <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
         COBA 
         <button 
