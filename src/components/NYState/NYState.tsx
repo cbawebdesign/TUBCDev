@@ -105,7 +105,7 @@ export default function UploadPage() {
     }
   };
 const buttonStyle = {
-    backgroundColor: '#0000FF', /* Dark Blue */
+    backgroundColor: '#FF00FF', /* Dark Blue */
     border: 'none',
     color: 'white',
     padding: '15px 32px',
