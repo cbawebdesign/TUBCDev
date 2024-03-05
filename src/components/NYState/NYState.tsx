@@ -10,10 +10,10 @@ export default function UploadPage() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string>('');
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
-  const categories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE'];
+  const categories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'PREMIUM_HISTORY_ALL', 'PREMIUM_MISMATCHES_ALL'];
   const [hasError, setHasError] = useState(false);
   const [union, setUnion] = useState<string>('');
-  const unionOptions = ['COBA', 'L831'];
+  const unionOptions = ['COBA', 'L831', 'MISC'];
 
   useEffect(() => {
     initialize(

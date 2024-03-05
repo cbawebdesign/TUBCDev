@@ -17,6 +17,7 @@ export default function DownloadPage() {
           const [currentSubCategory, setCurrentSubCategory] = useState<string | null>(null);
           const [isL831Visible, setL831Visible] = useState(true);
           const [isCOBAVisible, setCOBAVisible] = useState(true);
+          const [isMISCVisible, setMISCVisible] = useState(true);
   useEffect(() => {
     initialize(
       () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
@@ -108,13 +109,15 @@ export default function DownloadPage() {
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
   };
   
-  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING'];
+  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'PREMIUM_HISTORY_ALL'];
   const subCategories = {
     'PAYFILE_RAW': 'PAYFILE_RAW',
     'PAYFILE_EXTRACTED': 'PAYFILE_EXTRACTED',
     'MISMATCHED_PREMIUMS': 'MISMATCHED_PREMIUMS',
     'USERS_NOT_IN_DATABASE': 'USERS_NOT_IN_DATABASE',
     'ACTIVE_USERS_MISSING': 'ACTIVE_USERS_MISSING',
+    'PREMIUM_MISMATCHES_ALL': 'PREMIUM_MISMATCHES_ALL',
+    'PREMIUM_HISTORY_ALL': 'PREMIUM_HISTORY_ALL',
   };
   const buttonStyle = {
     backgroundColor: '#FF00FF', /* Fuchsia */
@@ -266,11 +269,11 @@ export default function DownloadPage() {
       <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
         COBA 
         <button 
-  onClick={() => setCOBAVisible(!isCOBAVisible)}
-  style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
->
-  Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
-</button>
+          onClick={() => setCOBAVisible(!isCOBAVisible)}
+          style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+        >
+          Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
+        </button>
       </h2>
       {isCOBAVisible && (
         <div>
@@ -299,10 +302,43 @@ export default function DownloadPage() {
         </div>
       )}
     </div>
+    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
+    <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+      MISC 
+      <button 
+        onClick={() => setMISCVisible(!isMISCVisible)}
+        style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+      >
+        Toggle {isMISCVisible ? <FaCaretUp /> : <FaCaretRight />}
+      </button>
+    </h2>
+    {isMISCVisible && (
+      <div>
+        {selectedSubCategories.map(subCategory => {
+          let filteredData = newData.filter(data => 
+            data.subCategory === subCategory && 
+            data.union.includes('MISC')
+          );
+          filteredData = filterDataByMonth(filteredData);
+          filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+          if (filteredData.length === 0) {
+            return <p key={subCategory}>No data available for {subCategory}</p>
+          }
+          return filteredData.map((data, index) => (
+            <div key={index} style={boxStyle}>
+              <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+              <p>Document title: {data.image}</p>
+              <a href={data.url} download target="_blank">
+                <button style={buttonStyle}>Download</button>
+              </a>
+            </div>
+          ));
+        })}
+      </div>
+    )}
   </div>
-
-
-
+</div>
   </div>
   );
 }
