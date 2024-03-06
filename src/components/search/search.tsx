@@ -123,8 +123,8 @@ export default function SearchPage() {
             <Table className={styles.table}>
               <TableHeader>
                 <TableRow>
+                <TableHead>Last Name</TableHead>
                   <TableHead>First Name</TableHead>
-                  <TableHead>Last Name</TableHead>
                   <TableHead>User ID</TableHead>
                   <TableHead>Union</TableHead>
                   <TableHead>Current Total Premium</TableHead>
@@ -135,8 +135,8 @@ export default function SearchPage() {
               <TableBody>
                 {searchResults.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell>{user.FirstName}</TableCell>
                     <TableCell>{user.LastName}</TableCell>
+                    <TableCell>{user.FirstName}</TableCell>
                     <TableCell>{user.id}</TableCell>
                     <TableCell>{user.union}</TableCell>
                     <TableCell>{user.CurrentTotalPremium}</TableCell>

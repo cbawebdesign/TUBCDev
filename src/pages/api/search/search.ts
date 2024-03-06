@@ -23,7 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     // Order by 'Name' before using 'startAfter'
-    queryBuilder = queryBuilder.orderBy('Name');
+    queryBuilder = queryBuilder.orderBy('LastName');
 
     if (startAfter && startAfter !== '') {
       const lastUserDoc = await getUsersCollection().doc(startAfter).get();

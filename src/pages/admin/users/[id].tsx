@@ -78,6 +78,8 @@ interface SearchResult {
     timestamp: string;
     amount: number;
   }[];
+  ChangeDateHistory?: { timestamp: string; date: string }[];
+
   premium_date: {
     date: string;
     premium: number;
@@ -87,6 +89,8 @@ interface SearchResult {
     timestamp: string;
   }[];
   // Add other properties if necessary
+  StartDateHistory?: { timestamp: string; date: string }[];
+
 }
 
 
@@ -138,6 +142,8 @@ function UserAdminPage({
     const [showAll, setShowAll] = useState(false);
     const [CurrentTotalPremiumHistory, setCurrentTotalPremiumHistory] = useState<{ timestamp: string; amount: number; }[]>([]);
     const [PolicyEffectiveDateInput, setPolicyEffectiveDateInput] = useState('');
+    const [showAllChangeDates, setShowAllChangeDates] = useState(false);
+    const [showAllStartDates, setShowAllStartDates] = useState(false);
 const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     useEffect(() => {
       const fetchUsers = async () => {
@@ -194,8 +200,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         setLastNameInput(currentUser.LastName);
         setLMInput(currentUser.LM);
         setMMInput(currentUser.MM);
-        setChangeDateInput(currentUser.ChangeDate);
-        setMarkifBWInput(currentUser.MarkifBW);
+ if (currentUser.ChangeDate) {
+    setChangeDateInput(currentUser.ChangeDate);
+  }        setMarkifBWInput(currentUser.MarkifBW);
         setPreviousTotalPremiumInput(currentUser.PreviousTotalPremium);
         setStatusInput(currentUser.Status);
         setFirstNameInput(currentUser.FirstName);
@@ -522,65 +529,105 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
           />
         </TextField.Label>
       </div>
-      <br></br>
-      <br></br>
-      <div className="w-full lg:w-64">
-  <h2 className="text-2xl font-bold mb-4">Premium History</h2>
-  {searchResult.premium_date.slice(0, showAll ? searchResult.premium_date.length : 1).map((premiumDate, index) => (
-    <div key={index} className="mb-5 w-full">
-      <TextField.Label>
-        <TextField.Input
-          className={'w-full'}
-          value={`Date: ${premiumDate.date}, Premium: ${premiumDate.premium}`}
-          readOnly
-        />
-      </TextField.Label>
-    </div>
-  ))}
-  {searchResult.premium_date.length > 1 && (
-    <button onClick={() => setShowAll(!showAll)}>
-      {showAll ? 'Show Less' : 'Show More'}
-    </button>
-  )}
+    
+
+      <div className="grid lg:grid-cols-3 gap-4">
+  <div className="w-full lg:w-64">
+    <h2 className="text-2xl font-bold mb-4">Premium History</h2>
+    {searchResult.premium_date.slice(0, showAll ? searchResult.premium_date.length : 1).map((premiumDate, index) => (
+      <div key={index} className="mb-5 w-full">
+        <TextField.Label>
+          <TextField.Input
+            className={'w-full'}
+            value={`Date: ${premiumDate.date}, Premium: ${premiumDate.premium}`}
+            readOnly
+          />
+        </TextField.Label>
+      </div>
+    ))}
+    {searchResult.premium_date.length > 1 && (
+      <button onClick={() => setShowAll(!showAll)}>
+        {showAll ? 'Show Less' : 'Show More'}
+      </button>
+    )}
+  </div>
+  <div className="w-full lg:w-64">
+    <h2 className="text-2xl font-bold mb-4">CTP History</h2>
+    {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.slice(0, showAll ? searchResult.CurrentTotalPremiumHistory.length : 1).map((premium, index) => (
+      <div key={index} className="mb-5 w-full">
+        <TextField.Label>
+          <TextField.Input
+            className={'w-full'}
+            value={`Date: ${new Date(premium.timestamp).toLocaleDateString()}, Premium: ${premium.amount}`}
+            readOnly
+          />
+        </TextField.Label>
+      </div>
+    ))}
+    {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.length > 1 && (
+      <button onClick={() => setShowAll(!showAll)}>
+        {showAll ? 'Show Less' : 'Show More'}
+      </button>
+    )}
+  </div>
+  <div className="w-full lg:w-64">
+    <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
+    {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
+      <div key={index} className="mb-5 w-full">
+        <TextField.Label>
+          <TextField.Input
+            className={'w-full'}
+            value={`Date: ${new Date(note.timestamp).toLocaleDateString()}, Note: ${note.note}`}
+            readOnly
+          />
+        </TextField.Label>
+      </div>
+    ))}
+    {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.length > 1 && (
+      <button onClick={() => setShowAllNotes(!showAllNotes)}>
+        {showAllNotes ? 'Show Less' : 'Show More'}
+      </button>
+    )}
+  </div>
 </div>
-<div className="w-full lg:w-64">
-  <h2 className="text-2xl font-bold mb-4">CTP History</h2>
-  {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.slice(0, showAll ? searchResult.CurrentTotalPremiumHistory.length : 1).map((premium, index) => (
-    <div key={index} className="mb-5 w-full">
-      <TextField.Label>
-        <TextField.Input
-          className={'w-full'}
-          value={`Date: ${new Date(premium.timestamp).toLocaleDateString()}, Premium: ${premium.amount}`}
-          readOnly
-        />
-      </TextField.Label>
-    </div>
-  ))}
-{searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.length > 1 && (
-    <button onClick={() => setShowAll(!showAll)}>
-      {showAll ? 'Show Less' : 'Show More'}
-    </button>
-  )}
-</div>
-<div className="w-full lg:w-64">
-  <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
-  {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
-    <div key={index} className="mb-5 w-full">
-      <TextField.Label>
-        <TextField.Input
-          className={'w-full'}
-          value={`Date: ${new Date(note.timestamp).toLocaleDateString()}, Note: ${note.note}`}
-          readOnly
-        />
-      </TextField.Label>
-    </div>
-  ))}
-{searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.length > 1 && (
-    <button onClick={() => setShowAllNotes(!showAllNotes)}>
-      {showAllNotes ? 'Show Less' : 'Show More'}
-    </button>
-  )}
-</div>
+  <div className="w-full lg:w-64">
+    <h2 className="text-2xl font-bold mb-4">Change Date History</h2>
+    {searchResult.ChangeDateHistory && searchResult.ChangeDateHistory.slice(0, showAllChangeDates ? searchResult.ChangeDateHistory.length : 1).map((changeDate, index) => (
+      <div key={index} className="mb-5 w-full">
+        <TextField.Label>
+          <TextField.Input
+            className={'w-full'}
+            value={`Date: ${new Date(changeDate.timestamp).toLocaleDateString()}, Change Date: ${changeDate.date}`}
+            readOnly
+          />
+        </TextField.Label>
+      </div>
+    ))}
+    {searchResult.ChangeDateHistory && searchResult.ChangeDateHistory.length > 1 && (
+      <button onClick={() => setShowAllChangeDates(!showAllChangeDates)}>
+        {showAllChangeDates ? 'Show Less' : 'Show More'}
+      </button>
+    )}
+  </div>
+  <div className="w-full lg:w-64">
+    <h2 className="text-2xl font-bold mb-4">Start Date History</h2>
+    {searchResult.StartDateHistory && searchResult.StartDateHistory.slice(0, showAllStartDates ? searchResult.StartDateHistory.length : 1).map((startDate, index) => (
+      <div key={index} className="mb-5 w-full">
+        <TextField.Label>
+          <TextField.Input
+            className={'w-full'}
+            value={`Date: ${new Date(startDate.timestamp).toLocaleDateString()}, Start Date: ${startDate.date}`}
+            readOnly
+          />
+        </TextField.Label>
+      </div>
+    ))}
+    {searchResult.StartDateHistory && searchResult.StartDateHistory.length > 1 && (
+      <button onClick={() => setShowAllStartDates(!showAllStartDates)}>
+        {showAllStartDates ? 'Show Less' : 'Show More'}
+      </button>
+    )}
+  </div>
 <hr className="my-8" />
 <div className="w-full lg:w-2/3">
   <h2 className="text-2xl font-bold mb-4">Uploaded Files</h2>
