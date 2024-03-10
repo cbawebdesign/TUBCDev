@@ -52,6 +52,8 @@ import Textarea from '~/core/ui/Textarea';
 
 interface SearchResult {
   union: string;
+  Active: boolean; // Add the 'Active' property
+
   uid: string; // Add the 'uid' property
   id:string;
   spouse: string;
@@ -103,6 +105,8 @@ function UserAdminPage({
     isDisabled: boolean;
     isActive: boolean;
     union:string;
+    Active: boolean; // Add the 'Active' field
+
   };
   organizations: Array<
     WithId<
@@ -144,6 +148,9 @@ function UserAdminPage({
     const [PolicyEffectiveDateInput, setPolicyEffectiveDateInput] = useState('');
     const [showAllChangeDates, setShowAllChangeDates] = useState(false);
     const [showAllStartDates, setShowAllStartDates] = useState(false);
+    const [ActiveInput, setActiveInput] = useState(false);
+
+    
 const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     useEffect(() => {
       const fetchUsers = async () => {
@@ -206,10 +213,11 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         setPreviousTotalPremiumInput(currentUser.PreviousTotalPremium);
         setStatusInput(currentUser.Status);
         setFirstNameInput(currentUser.FirstName);
+        setActiveInput(currentUser.Active);
 
       }
     }, [searchResults, user.uid]);
-    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string, PolicyEffectiveDate: string, DeductionStatus: string) => {
+    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string, PolicyEffectiveDate: string, DeductionStatus: string, ActiveInput: boolean) => {
       try {
         const requestBody = {
           union: union,
@@ -224,6 +232,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
           ChangeDate: ChangeDate,
           PolicyEffectiveDate: PolicyEffectiveDate,
       DeductionStatus: DeductionStatus,
+      Active: ActiveInput,
         };
         console.log(requestBody); // Add this line
         console.log('Updating user with ID:', user.uid);
@@ -293,6 +302,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         );
       }
     };
+
+
+    
   return (
     <AdminRouteShell>
       <Head>
@@ -319,37 +331,19 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             <Heading type={4}>User Details</Heading>
 
             <div className={'flex space-x-2 items-center'}>
-              <div>
-                <Label>Status</Label>
-              </div>
+          
 
-              <div className={'inline-flex'}>
-                {user.isActive ? (
-                  <Badge size={'small'} color={'error'}>
-                    Disabled
-                  </Badge>
-                ) : (
-                  <Badge size={'small'} color={'success'}>
-                    Active
-                  </Badge>
-                )}
-              </div>
+          
             </div>
-
-            <TextField.Label>
-              Display name
-              <TextField.Input
-                className={'max-w-sm'}
-                defaultValue={user.displayName ?? ''}
-                
-              />
-            </TextField.Label>
+       
+            
+         
 
            
   
             <div className="space-y-4 max-w-md mx-auto">
   <input type="file" onChange={handleFileChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-  <button onClick={handleUpload} className="w-full px-3 py-2 bg-fuchsia-500 text-white rounded-md">Upload</button>
+  <button onClick={handleUpload} className="w-full px-3 py-2 bg-blue-500 text-white rounded-md">Upload</button>
     <div className="relative pt-1">
     <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
       <div style={{ width: `${uploadProgress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
@@ -359,26 +353,46 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
 </div>
 
 
-            <TextField.Label>
-              Phone number
-              <TextField.Input
-                className={'max-w-sm'}
-                defaultValue={user.phoneNumber ?? ''}
-                disabled
-              />
-            </TextField.Label>
-
 {searchResults.map((searchResult) => {
   if (searchResult.id === user.uid) {
     return (
+      
       <form 
       key={searchResult.id} 
       onSubmit={(e) => { 
         e.preventDefault(); 
-        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput, PolicyEffectiveDateInput, DeductionStatusInput);       }}
+        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput, PolicyEffectiveDateInput, DeductionStatusInput, ActiveInput);       }}
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
-      <div style={{ width: '30%' }}>
+<div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <TextField.Label style={{ marginRight: '5px' }}>
+      Active 
+    </TextField.Label>
+    <label className="switch" style={{ marginRight: '5px' }}>
+      <input
+        type="checkbox"
+        checked={ActiveInput}
+        onChange={() => setActiveInput(!ActiveInput)}
+      />
+      <span className="slider round"></span>
+    </label>
+    <TextField.Label></TextField.Label>
+  </div>
+  <div className={'inline-flex'}>
+    {searchResult.Active ? (
+      <Badge size={'small'} color={'success'}>
+        Active
+      </Badge>
+    ) : (
+      <Badge size={'small'} color={'error'}>
+        Inactive
+      </Badge>
+    )}
+  </div>
+</div>
+<div style={{ width: '30%' }}>
+ 
       <TextField.Label>
           First Name
           <TextField.Input
@@ -650,7 +664,8 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             LastNameInput,
             ChangeDateInput,
             PolicyEffectiveDateInput,
-            DeductionStatusInput
+            DeductionStatusInput,
+            ActiveInput
           );
         }}
         className="space-y-4"
