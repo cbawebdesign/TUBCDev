@@ -343,7 +343,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
   
             <div className="space-y-4 max-w-md mx-auto">
   <input type="file" onChange={handleFileChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" />
-  <button onClick={handleUpload} className="w-full px-3 py-2 bg-blue-500 text-white rounded-md">Upload</button>
+  <button onClick={handleUpload} className="w-full px-3 py-2 bg-fuchsia-500 text-white rounded-md">Upload</button>
     <div className="relative pt-1">
     <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-green-200">
       <div style={{ width: `${uploadProgress}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
@@ -548,7 +548,10 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <div className="grid lg:grid-cols-3 gap-4">
   <div className="w-full lg:w-64">
     <h2 className="text-2xl font-bold mb-4">Premium History</h2>
-    {searchResult.premium_date.slice(0, showAll ? searchResult.premium_date.length : 1).map((premiumDate, index) => (
+    {searchResult.premium_date
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .slice(0, showAll ? searchResult.premium_date.length : 1)
+  .map((premiumDate, index) => (
       <div key={index} className="mb-5 w-full">
         <TextField.Label>
           <TextField.Input
