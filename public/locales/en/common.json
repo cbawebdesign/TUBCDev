@@ -6,6 +6,7 @@
   "searchLabel": "User Search",
   "adminLabel": "Admin",
   "NYLabel":"Upload Documents",
+  "CreateUserLabel":"Create User",
   "profileSettingsTabLabel": "Profile",
   "subscriptionSettingsTabLabel": "Notes",
   "emailAddress": "Email Address",

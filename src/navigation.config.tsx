@@ -1,5 +1,5 @@
 import configuration from '~/configuration';
-import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon } from '@heroicons/react/24/outline';
+import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 
 const NAVIGATION_CONFIG = {
   items: [
@@ -15,6 +15,13 @@ const NAVIGATION_CONFIG = {
       path: '/settings',
       Icon: ({ className }: { className: string }) => {
         return <Cog8ToothIcon className={className} />;
+      },
+    },
+    {
+      label: 'common:CreateUserLabel',
+      path: '/adduser',
+      Icon: ({ className }: { className: string }) => {
+        return <UserPlusIcon className={className} />;
       },
     },
     {
@@ -46,6 +53,7 @@ const NAVIGATION_CONFIG = {
         return <CodeBracketSquareIcon className={className} />;
       },
     },
+  
   ],
 };
 
