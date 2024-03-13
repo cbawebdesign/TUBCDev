@@ -58,7 +58,7 @@ const OrganizationsSelector = ({ userId }: { userId: string }) => {
 
         <SelectContent position={'popper'}>
           <SelectGroup>
-            <SelectLabel>Your Customers</SelectLabel>
+            <SelectLabel>Admin</SelectLabel>
 
             <SelectSeparator />
 
@@ -78,20 +78,7 @@ const OrganizationsSelector = ({ userId }: { userId: string }) => {
                 return router.replace(getDeepLinkPath(organizationId, path));
               }}
             >
-              <SelectAction>
-                <span
-                  data-cy={'create-organization-button'}
-                  className={'flex flex-row items-center space-x-2 truncate'}
-                >
-                  <PlusCircleIcon className={'h-5'} />
-
-                  <span>
-                    <Trans
-                      i18nKey={'organization:createOrganizationDropdownLabel'}
-                    />
-                  </span>
-                </span>
-              </SelectAction>
+              
             </CreateOrganizationModal>
           </SelectGroup>
         </SelectContent>

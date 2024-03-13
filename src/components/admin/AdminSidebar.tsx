@@ -23,7 +23,7 @@ function AdminSidebar() {
         path={'/admin/organizations'}
         Icon={() => <UserGroupIcon className={'h-6'} />}
       >
-        Organizations
+        Unions
       </SidebarItem>
     </Sidebar>
   );
