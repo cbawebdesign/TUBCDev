@@ -118,6 +118,7 @@ export default function DownloadPage() {
     'ACTIVE_USERS_MISSING': 'ACTIVE_USERS_MISSING',
     'PREMIUM_MISMATCHES_ALL': 'PREMIUM_MISMATCHES_ALL',
     'PREMIUM_HISTORY_ALL': 'PREMIUM_HISTORY_ALL',
+    'DEDUCTION_STATUS_CHANGES': 'DEDUCTION_STATUS_CHANGES'
   };
   const buttonStyle = {
     backgroundColor: '#FF00FF', /* Fuchsia */

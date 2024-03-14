@@ -6,6 +6,7 @@
   "searchLabel": "User Search",
   "adminLabel": "Admin",
   "NYLabel":"Upload Documents",
+  "OutgoingLabel":"Outgoing NY State",
   "CreateUserLabel":"Create User",
   "profileSettingsTabLabel": "Profile",
   "subscriptionSettingsTabLabel": "Notes",

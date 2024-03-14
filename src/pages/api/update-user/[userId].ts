@@ -18,10 +18,16 @@ type DateChange = {
   timestamp: Date;
 };
 
-
+type ActiveStatusChange = {
+  status: boolean;
+  timestamp: Date;
+};
 type UserData = {
   // other properties...
+  Active?: boolean;
+  ActiveHistory?: ActiveStatusChange[];
   CaseNotes?: string;
+
   CaseNotesHistory?: CaseNote[];
   CurrentTotalPremium?: number;
   CurrentTotalPremiumHistory?: Premium[];
@@ -64,6 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ChangeDateHistory: userData.ChangeDateHistory || [],
       StartDate: userData.StartDate || "",
       StartDateHistory: userData.StartDateHistory || [],
+      Active: userData.Active || false,
+      ActiveHistory: userData.ActiveHistory || [],
     };
 
     // Append the new case note to the updateData.CaseNotes array if it's not undefined
@@ -106,7 +114,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
       });
     }
-
+// Append the new active status to the updateData.ActiveHistory array if it's not undefined and different from the current active status
+if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
+  updateData.Active = req.body.Active;
+  updateData.ActiveHistory.push({
+    status: req.body.Active,
+    timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+  });
+}
     try {
       // Update the user document in the database
       await getUsersCollection().doc(userId).set(updateData, { merge: true });
