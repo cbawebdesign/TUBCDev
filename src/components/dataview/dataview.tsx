@@ -18,117 +18,91 @@ export default function DownloadPage() {
           const [isL831Visible, setL831Visible] = useState(true);
           const [isCOBAVisible, setCOBAVisible] = useState(true);
           const [isMISCVisible, setMISCVisible] = useState(true);
-          interface Group {
-            id: string;
-            url: string;
-            image: string;
-            timestamp: any; // Replace with the actual type
-            union: string;
-            isEncrypted: boolean;
+  useEffect(() => {
+    initialize(
+      () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
+        .then(response => response.text()),
+      () => Promise.resolve('testpassword'),
+    )
+    .then(() => setSdkInitialized(true))
+    .catch((error: Error) => console.error('Error initializing IronWeb SDK:', error));
+  }, []);
+
+  useEffect(() => {
+    const fetchAndDecryptData = async () => {
+      if (!isSdkInitialized || !currentCategory) return;
+  
+      const auth = getAuth();
+      const user = auth.currentUser;
+      let userName = null;
+  
+      if (user) {
+        const db = getFirestore();
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+  
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as { userName: string };
+          userName = userData.userName;
+        }
+      }
+  
+      if (!userName) {
+        console.error('No user is currently logged in or userName is not set');
+        return;
+      }
+  
+      const requestBody = {
+        userName: userName,
+        categories: currentSubCategory,
+      };
+      const response = await fetch(`/api/decrypt/decrypt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const groups = await response.json();
+  
+      for (const group of groups) {
+        if (group.url && group.image) {
+          const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
+          const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
+         // Convert the Firestore timestamp to a JavaScript Date object
+    const timestampObject = group.timestamp; // Replace with the actual object
+    const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
+    const date = new Date(timestampMilliseconds);
+    console.log(`Date for group ${group.id}:`, date);
+          let documentId, imageId;
+  
+          try {
+            documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
+            imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
+          } catch (error) {
+            console.error(`Error getting document ID for group ${group.id}:`, error);
+            continue;
           }
-          useEffect(() => {
-            initialize(
-              () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
-                .then(response => response.text()),
-              () => Promise.resolve('testpassword'),
-            )
-            .then(() => setSdkInitialized(true))
-            .catch((error: Error) => console.error('Error initializing IronWeb SDK:', error));
-          }, []);
-          // Add this function at the top of your file or outside of your component
-          function isBase64(str: string): boolean {
-            try {
-              return btoa(atob(str)) == str;
-            } catch (err) {
-              return false;
+  
+          if (documentId && imageId) {
+            const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
+            const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
+            const decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
+            const decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
+          
+            // Check if the document for the current subcategory is already in the newData state
+            if (!newData.some(data => data.subCategory === currentSubCategory)) {
+              setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: currentSubCategory, union: group.union }]);
             }
+          } else {
+            console.error(`Document ID is null for group ${group.id}`);
           }
-          useEffect(() => {
-            const fetchAndDecryptData = async () => {
-              if (!isSdkInitialized || !currentCategory) return;
-          
-              const auth = getAuth();
-              const user = auth.currentUser;
-              let userName = null;
-          
-              if (user) {
-                const db = getFirestore();
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-          
-                if (userDoc.exists()) {
-                  const userData = userDoc.data() as { userName: string };
-                  userName = userData.userName;
-                }
-              }
-          
-              if (!userName) {
-                console.error('No user is currently logged in or userName is not set');
-                return;
-              }
-          
-              const requestBody = {
-                userName: userName,
-                categories: currentSubCategory,
-              };
-              const response = await fetch(`/api/decrypt/decrypt`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-              });
-              const groups = await response.json();
-          
-              for (const group of groups as Group[]) {
-                if (group.url && group.image) {
-                  const timestampObject = group.timestamp;
-                  const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
-                  const date = new Date(timestampMilliseconds);
-                  console.log(`Date for group ${group.id}:`, date);
-              
-                  let url: string;
-                  let image: string;
-                  if (group.isEncrypted) {
-                    const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
-                    const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
-                  
-                    let documentId, imageId;
-                  
-                    try {
-                      documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
-                      imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
-                    } catch (error) {
-                      console.error(`Error getting document ID for group ${group.id}:`, error);
-                      continue;
-                    }
-                  
-                    if (documentId && imageId) {
-                      try {
-                        const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
-                        const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
-                        url = new TextDecoder().decode(new Uint8Array(decryptedData.data));
-                        image = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
-                      } catch (error) {
-                        console.error(`Error decrypting data for group ${group.id}:`, error);
-                      }
-                    } else {
-                      console.error(`Document ID is null for group ${group.id}`);
-                    }
-                  } else {
-                    url = group.url;
-                    image = group.image;
-                  }
-                  
-                  if (!newData.some(data => data.subCategory === currentSubCategory)) {
-                    setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: url, image: image, category: currentCategory, subCategory: currentSubCategory, union: group.union }]);
-                  }
-                } else {
-                  console.error(`URL or image is missing for group ${group.id}`);
-                }
-              }
-            };
-            fetchAndDecryptData();
-          }, [isSdkInitialized, currentSubCategory]);
+        } else {
+          console.error(`URL or image is missing for group ${group.id}`);
+        }
+      }
+    };
+    fetchAndDecryptData();
+  }, [isSdkInitialized, currentSubCategory]);
 
   const filterDataByMonth = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
     if (selectedMonths.length === 0) return data;
