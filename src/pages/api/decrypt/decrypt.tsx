@@ -40,6 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image: doc.data().image, // assuming the field in your Firestore document is named 'image'
         timestamp: doc.data().timestamp, // add this line
         union: doc.data().union,
+        isEncrypted: doc.data().isEncrypted, // add this line
+
       }));
 
       res.status(200).json(posts);

@@ -410,14 +410,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             onChange={(e) => setSpouseInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
-        <TextField.Label>
-          Union
-          <TextField.Input
-            className={'max-w-sm'}
-            value={unionInput}
-            onChange={(e) => setUnionInput((e.target as HTMLInputElement).value)}
-          />
-        </TextField.Label>
+      
         <TextField.Label>
           Change Date
           <TextField.Input
@@ -435,6 +428,26 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             onChange={(e) => setCaseNotesInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
+        <TextField.Label>
+  Union
+  <div className="relative inline-block w-full text-gray-700 w-64"> {/* Adjust the width here */}
+  <select
+  className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
+  value={unionInput}
+  onChange={(e) => setUnionInput((e.target as HTMLSelectElement).value)}
+>
+<option value="COBA">COBA</option>
+    <option value="L831">L831</option>
+</select>
+    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+        <path d="M7 7a1 1 0 011.707-.707l3.586 3.586a1 1 0 01-1.414 1.414l-3.586-3.586A1 1 0 017 7z" />
+        <path d="M7 13a1 1 0 011.707-.707l3.586 3.586a1 1 0 11-1.414 1.414l-3.586-3.586A1 1 0 017 13z" />
+      </svg>
+    </div>
+  </div>
+</TextField.Label>
+
       </div>
       <div style={{ width: '30%' }}>
        
@@ -592,10 +605,11 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
       <div key={index} className="mb-5 w-full">
         <TextField.Label>
-          <TextField.Input
+          <textarea // Change TextField.Input to textarea
             className={'w-full'}
             value={`Date: ${new Date(note.timestamp).toLocaleDateString()}, Note: ${note.note}`}
             readOnly
+            style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
           />
         </TextField.Label>
       </div>
