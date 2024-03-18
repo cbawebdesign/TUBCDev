@@ -1,9 +1,9 @@
 import { Line, ResponsiveContainer, LineChart, XAxis } from 'recharts';
-import { useMemo } from 'react';
 
 import Tile from '~/core/ui/Tile';
 import Heading from '~/core/ui/Heading';
-
+import React, { useState, useMemo } from 'react';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 import {
   Table,
   TableBody,
@@ -15,6 +15,7 @@ import {
 
 import { useUserSession } from '~/core/hooks/use-user-session';
 import { Title } from '@radix-ui/react-dialog';
+import { Document, Page, pdfjs } from 'react-pdf';
 
 export default function DashboardDemo() {
   const mrr = useMemo(() => generateDemoData(), []);
@@ -26,146 +27,68 @@ export default function DashboardDemo() {
   const newCustomers = useMemo(() => generateDemoData(), []);
   const tickets = useMemo(() => generateDemoData(), []);
   const activeUsers = useMemo(() => generateDemoData(), []);
+  const [numPages, setNumPages] = useState<number | null>(null);
+    const [pageNumber, setPageNumber] = useState(1);
 
+
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+    setNumPages(numPages);
+  }
   return (
-    <div className={'flex flex-col space-y-6 pb-36'}>
+    <div className={'flex flex-col pb-36'}>
       <UserGreetings />
-      <p>IN DEVELOPMENT-DRAFT</p>
-
-      <div
-        className={
-          'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3' +
-          ' xl:grid-cols-4'
-        }
-      >
-        <Tile>
-          <Tile.Heading>New Customers</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{`$${mrr[1]}`}</Tile.Figure>
-              <Tile.Trend trend={'up'}>0%</Tile.Trend>
-            </div>
-
-            <Chart data={mrr[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Existing Customers</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{`$${netRevenue[1]}`}</Tile.Figure>
-              <Tile.Trend trend={'up'}>12%</Tile.Trend>
-            </div>
-
-            <Chart data={netRevenue[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Outgoing Files</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{`$${fees[1]}`}</Tile.Figure>
-              <Tile.Trend trend={'up'}>9%</Tile.Trend>
-            </div>
-
-            <Chart data={fees[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Incoming Files</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{`${newCustomers[1]}`}</Tile.Figure>
-              <Tile.Trend trend={'down'}>-25%</Tile.Trend>
-            </div>
-
-            <Chart data={newCustomers[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{visitors[1]}</Tile.Figure>
-              <Tile.Trend trend={'down'}>-4.3%</Tile.Trend>
-            </div>
-
-            <Chart data={visitors[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{returningVisitors[1]}</Tile.Figure>
-              <Tile.Trend trend={'stale'}>10%</Tile.Trend>
-            </div>
-
-            <Chart data={returningVisitors[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{churn[1]}%</Tile.Figure>
-              <Tile.Trend trend={'up'}>-10%</Tile.Trend>
-            </div>
-
-            <Chart data={churn[0]} />
-          </Tile.Body>
-        </Tile>
-
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{tickets[1]}</Tile.Figure>
-              <Tile.Trend trend={'up'}>-30%</Tile.Trend>
-            </div>
-
-            <Chart data={tickets[0]} />
-          </Tile.Body>
-        </Tile>
-      </div>
-
-      <div>
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <div className={'flex justify-between'}>
-              <Tile.Figure>{activeUsers[1]}</Tile.Figure>
-              <Tile.Trend trend={'up'}>10%</Tile.Trend>
-            </div>
-
-            <Chart data={activeUsers[0]} />
-          </Tile.Body>
-        </Tile>
-      </div>
-
-      <div>
-        <Tile>
-          <Tile.Heading>Placeholder</Tile.Heading>
-
-          <Tile.Body>
-            <CustomersTable></CustomersTable>
-          </Tile.Body>
-        </Tile>
+  
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h1 style={{ 
+          fontSize: '2em', 
+          textAlign: 'center', 
+          textDecoration: 'underline', 
+          fontFamily: 'Arial, sans-serif' 
+        }}>
+          Tristate Union Benefits Admin Systems Overview & User Guide
+        </h1>
+        <div style={{ height: '70vh', overflow: 'auto' }}>
+          <Document
+            file="/assets/images/tr.pdf"
+            onLoadSuccess={onDocumentLoadSuccess}
+          >
+            <Page pageNumber={pageNumber} renderTextLayer={false} />
+          </Document>
+        </div>
+        <p>Page {pageNumber} of {numPages ?? 'unknown'}</p>
+        <div>
+          <button 
+            style={{
+              backgroundColor: '#000033', 
+              color: 'white', 
+              borderRadius: '5px', 
+              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.75)', 
+              padding: '10px 20px', 
+              margin: '10px', 
+              border: 'none'
+            }}
+            onClick={() => setPageNumber(pageNumber - 1)} 
+            disabled={pageNumber <= 1}
+          >
+            Previous
+          </button>
+          <button 
+            style={{
+              backgroundColor: '#000033', 
+              color: 'white', 
+              borderRadius: '5px', 
+              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.75)', 
+              padding: '10px 20px', 
+              margin: '10px', 
+              border: 'none'
+            }}
+            onClick={() => setPageNumber(pageNumber + 1)} 
+            disabled={pageNumber >= (numPages ?? 1)}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -235,6 +158,8 @@ function Chart(
         </LineChart>
       </ResponsiveContainer>
     </div>
+
+    
   );
 }
 
@@ -293,5 +218,7 @@ function CustomersTable() {
         </TableRow>
       </TableBody>
     </Table>
+
+    
   );
 }

@@ -121,7 +121,7 @@ const buttonStyle = {
   const uploadedFileStyle = {
     marginTop: '20px', 
     marginBottom: '20px', 
-    border: '1px solid #0000FF', 
+    border: '1px solid #000080', 
     padding: '10px',
     borderRadius: '15px', // This will make the border rounded
     boxShadow: '5px 5px 15px rgba(0, 0, 0, 0.3)', // This will give it a 3D effect
@@ -191,7 +191,7 @@ const buttonStyle = {
         <h2 style={{ marginTop: '20px' }}>Uploaded files:</h2>
         {uploadedFiles.map((file, index) => (
           <div key={index} style={uploadedFileStyle}>
-            <h2 style={{     color: '#0000FF' 
+            <h2 style={{     color: '#FF00FF' 
             }}>
               File: {file.fileName}
             </h2>

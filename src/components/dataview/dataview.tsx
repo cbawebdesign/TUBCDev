@@ -18,6 +18,8 @@ export default function DownloadPage() {
           const [isL831Visible, setL831Visible] = useState(true);
           const [isCOBAVisible, setCOBAVisible] = useState(true);
           const [isMISCVisible, setMISCVisible] = useState(true);
+          const [selectedYears, setSelectedYears] = useState<number[]>([]);
+
   useEffect(() => {
     initialize(
       () => fetch('https://us-central1-test7-8a527.cloudfunctions.net/generateJwt')
@@ -104,11 +106,22 @@ export default function DownloadPage() {
     fetchAndDecryptData();
   }, [isSdkInitialized, currentSubCategory]);
 
-  const filterDataByMonth = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
-    if (selectedMonths.length === 0) return data;
-    return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()));
+  const filterDataByMonthAndYear = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
+    if (selectedMonths.length === 0 && selectedYears.length === 0) return data;
+    return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()) && selectedYears.includes(item.timestamp.getFullYear()));
   };
   
+// Add this function to generate a list of years
+const generateYearList = (startYear: number, endYear: number) => {
+  const years = [];
+  for (let year = startYear; year <= endYear; year++) {
+    years.push(year);
+  }
+  return years;
+};
+
+const yearList = generateYearList(2024, 2035);
+
   const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'PREMIUM_HISTORY_ALL'];
   const subCategories = {
     'PAYFILE_RAW': 'PAYFILE_RAW',
@@ -161,6 +174,24 @@ export default function DownloadPage() {
         }}>{category}</button>
       ))}
     </div>
+<div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+  {yearList.map(year => (
+    <label style={{ ...buttonStyle, fontSize: '1.1em', backgroundColor: '#008080', padding: '10px', borderRadius: '5px' }}>
+      <input
+        type="checkbox"
+        checked={selectedYears.includes(year)}
+        onChange={() => {
+          if (selectedYears.includes(year)) {
+            setSelectedYears(selectedYears.filter(y => y !== year));
+          } else {
+            setSelectedYears([...selectedYears, year]);
+          }
+        }}
+      />
+      {year}
+    </label>
+  ))}
+</div>
     <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
     {Array.from({ length: 12 }, (_, i) => i).map(month => (
       <label style={{ ...buttonStyle, fontSize: '1.1em', backgroundColor: '#008080', padding: '10px', borderRadius: '5px' }}>
@@ -246,7 +277,7 @@ export default function DownloadPage() {
               data.subCategory === subCategory && 
               data.union.includes('L831')
             );
-            filteredData = filterDataByMonth(filteredData);
+            filteredData = filterDataByMonthAndYear(filteredData);
             filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
             if (filteredData.length === 0) {
@@ -254,7 +285,7 @@ export default function DownloadPage() {
             }
             return filteredData.map((data, index) => (
               <div key={index} style={boxStyle}>
-                <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+                <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
                 <p>Decrypted image title: {data.image}</p>
                 <a href={data.url} download target="_blank">
                   <button style={buttonStyle}>Download</button>
@@ -283,7 +314,7 @@ export default function DownloadPage() {
               data.subCategory === subCategory && 
               data.union.includes('COBA')
             );
-            filteredData = filterDataByMonth(filteredData);
+            filteredData = filterDataByMonthAndYear(filteredData);
             filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
             if (filteredData.length === 0) {
@@ -291,7 +322,7 @@ export default function DownloadPage() {
             }
             return filteredData.map((data, index) => (
               <div key={index} style={boxStyle}>
-                <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+                <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
                 <p>Decrypted data for ID {data.id}:</p>
                 <p>Document title: {data.image}</p>
                 <a href={data.url} download target="_blank">
@@ -320,7 +351,7 @@ export default function DownloadPage() {
             data.subCategory === subCategory && 
             data.union.includes('MISC')
           );
-          filteredData = filterDataByMonth(filteredData);
+          filteredData = filterDataByMonthAndYear(filteredData);
           filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
           if (filteredData.length === 0) {
@@ -328,7 +359,7 @@ export default function DownloadPage() {
           }
           return filteredData.map((data, index) => (
             <div key={index} style={boxStyle}>
-              <h2 style={{ color: '#0000FF' }}>SubCategory: {data.subCategory}</h2>
+              <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
               <p>Document title: {data.image}</p>
               <a href={data.url} download target="_blank">
                 <button style={buttonStyle}>Download</button>

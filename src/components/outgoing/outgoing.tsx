@@ -46,7 +46,7 @@ export default function OutgoingPage() {
       </div>
   
       <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
-        <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>NY Output Files Que:</h2>
+        <h2 style={{ color: 'fucshia', textAlign: 'center' }}>NY Output Files Que:</h2>
         {documentsTwo.map((document, index) => (
           <div key={index}>
             {document.change && <pre>
@@ -57,6 +57,11 @@ export default function OutgoingPage() {
           </div>
         ))}
       </div>
+      <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
+        <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>Sent NY Files:</h2>
+        
+      </div>
+
     </div>
   );
 }

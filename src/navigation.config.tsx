@@ -1,11 +1,11 @@
 import configuration from '~/configuration';
-import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon, UserPlusIcon, ServerIcon } from '@heroicons/react/24/outline';
+import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon, UserPlusIcon, ServerIcon, ArrowPathRoundedSquareIcon, PlusCircleIcon, PlusSmallIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 const NAVIGATION_CONFIG = {
   items: [
     {
       label: 'common:dashboardTabLabel',
-      path: configuration.paths.appHome,
+      path: '/dashboard',
       Icon: ({ className }: { className: string }) => {
         return <Squares2X2Icon className={className} />;
       },
@@ -15,6 +15,13 @@ const NAVIGATION_CONFIG = {
       path: '/settings',
       Icon: ({ className }: { className: string }) => {
         return <Cog8ToothIcon className={className} />;
+      },
+    },
+    {
+      label: 'common:AddUnionLabel',
+      path: '/addunion',
+      Icon: ({ className }: { className: string }) => {
+        return <PlusCircleIcon className={className} />;
       },
     },
     {

@@ -19,12 +19,7 @@ function AdminSidebar() {
         Users
       </SidebarItem>
 
-      <SidebarItem
-        path={'/admin/organizations'}
-        Icon={() => <UserGroupIcon className={'h-6'} />}
-      >
-        Unions
-      </SidebarItem>
+    
     </Sidebar>
   );
 }
