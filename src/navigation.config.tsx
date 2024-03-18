@@ -1,5 +1,5 @@
 import configuration from '~/configuration';
-import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon, UserPlusIcon, ServerIcon, ArrowPathRoundedSquareIcon, PlusCircleIcon, PlusSmallIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Cog8ToothIcon, ShieldCheckIcon, CodeBracketIcon, Squares2X2Icon, MagnifyingGlassPlusIcon, CodeBracketSquareIcon, ArchiveBoxArrowDownIcon, UserPlusIcon, ServerIcon, ArrowPathRoundedSquareIcon, PlusCircleIcon, PlusSmallIcon, PlusIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
 
 const NAVIGATION_CONFIG = {
   items: [
@@ -7,7 +7,7 @@ const NAVIGATION_CONFIG = {
       label: 'common:dashboardTabLabel',
       path: '/dashboard',
       Icon: ({ className }: { className: string }) => {
-        return <Squares2X2Icon className={className} />;
+        return <DocumentCheckIcon className={className} />;
       },
     },
     {
