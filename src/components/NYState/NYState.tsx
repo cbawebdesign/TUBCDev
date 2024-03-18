@@ -10,7 +10,7 @@ export default function UploadPage() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string>('');
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
-  const categories = ['MASTER_SHEET','PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'PREMIUM_HISTORY_ALL', 'PREMIUM_MISMATCHES_ALL', 'DEDUCTION_STATUS_CHANGES'];
+  const categories = ['MASTER_SHEET','PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'PREMIUM_HISTORY_ALL', 'PREMIUM_MISMATCHES_ALL', 'DEDUCTION_STATUS_CHANGES', 'MASTER_SHEET_CHANGES'];
   const [hasError, setHasError] = useState(false);
   const [union, setUnion] = useState<string>('');
   const unionOptions = ['COBA', 'L831', 'MISC','MASTER_SHEET'];
