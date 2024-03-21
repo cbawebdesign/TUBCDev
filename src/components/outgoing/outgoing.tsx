@@ -112,9 +112,16 @@ return (
     </div>
 
 
-      <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
-        <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>Sent NY Files:</h2>
-      </div>
+    <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
+  <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>Sent NY Files:</h2>
+  <h2 style={{  textAlign: 'left' }}>Sent 3-21-24</h2>
+  <pre>
+    {`1536379     F459270015363790000002024-03-218271C2024-03-21605BM68412024-03-200000000000000
+1890429     F459270018904290000002024-03-218271A2024-03-21605BM68419999-12-310000000004200
+1929292     F459270019292920000002024-03-218271A2024-03-21605BM68419999-12-310000000004489
+1730397     F459270017303970000002024-03-198271A2024-03-19605BM68419999-12-310000000004535`}
+  </pre>
+</div>
     </div>
   );
 }

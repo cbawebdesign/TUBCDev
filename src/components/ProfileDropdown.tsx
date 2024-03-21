@@ -13,6 +13,7 @@ import {
   ComputerDesktopIcon,
   MoonIcon,
   CheckCircleIcon,
+  ArchiveBoxArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
 import {
@@ -38,6 +39,7 @@ import {
 } from '~/core/theming';
 
 import If from '~/core/ui/If';
+import { FaDashcube } from 'react-icons/fa';
 
 const ProfileDropdown: React.FCC<{
   user: Maybe<UserInfo>;
@@ -84,12 +86,12 @@ const ProfileDropdown: React.FCC<{
 
         <DropdownMenuItem>
           <Link
-            href={configuration.paths.appHome}
+            href={'/dataview'}
             className={'flex h-full w-full items-center space-x-2'}
           >
-            <Squares2X2Icon className={'h-5'} />
+            <FaDashcube className={'h-5'} />
             <span>
-              <Trans i18nKey={'common:dashboardTabLabel'} />
+              <Trans i18nKey={'common:dashboardtwo'} />
             </span>
           </Link>
         </DropdownMenuItem>
