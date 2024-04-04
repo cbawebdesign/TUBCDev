@@ -2,23 +2,22 @@
 import { useEffect, useState } from 'react';
 import { initialize, document } from '@ironcorelabs/ironweb';
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getDoc } from "firebase/firestore";
-import { doc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+
 import Button from '~/core/ui/Button';
 import { Timestamp } from "firebase/firestore";
 import { FaCaretDown, FaCaretRight, FaCaretUp } from 'react-icons/fa';
 export default function DownloadPage() {
   const [isSdkInitialized, setSdkInitialized] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
-  const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string, union: string }[]>([]);         
-   const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
+  const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string, union: string, isRead: boolean }[]>([]);   const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
           const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
           const [currentSubCategory, setCurrentSubCategory] = useState<string | null>(null);
           const [isL831Visible, setL831Visible] = useState(true);
           const [isCOBAVisible, setCOBAVisible] = useState(true);
           const [isMISCVisible, setMISCVisible] = useState(true);
           const [selectedYears, setSelectedYears] = useState<number[]>([]);
+          const [filterReadStatus, setFilterReadStatus] = useState<'all' | 'read' | 'unread'>('all');
 
   useEffect(() => {
     initialize(
@@ -70,11 +69,13 @@ export default function DownloadPage() {
         if (group.url && group.image) {
           const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
           const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
-         // Convert the Firestore timestamp to a JavaScript Date object
-    const timestampObject = group.timestamp; // Replace with the actual object
-    const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
-    const date = new Date(timestampMilliseconds);
-    console.log(`Date for group ${group.id}:`, date);
+  
+          // Convert the Firestore timestamp to a JavaScript Date object
+          const timestampObject = group.timestamp; // Replace with the actual object
+          const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
+          const date = new Date(timestampMilliseconds);
+          console.log(`Date for group ${group.id}:`, date);
+  
           let documentId, imageId;
   
           try {
@@ -84,33 +85,33 @@ export default function DownloadPage() {
             console.error(`Error getting document ID for group ${group.id}:`, error);
             continue;
           }
-  
           if (documentId && imageId) {
             const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
             const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
             const decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
             const decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
-          
+  
             // Check if the document for the current subcategory is already in the newData state
             if (!newData.some(data => data.subCategory === currentSubCategory)) {
-              setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: currentSubCategory, union: group.union }]);
+              setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: currentSubCategory, union: group.union, isRead: group.isRead }]);
             }
-          } else {
+          } else if (!documentId) {
             console.error(`Document ID is null for group ${group.id}`);
+          } else {
+            console.error(`URL or image is missing for group ${group.id}`);
           }
-        } else {
-          console.error(`URL or image is missing for group ${group.id}`);
         }
       }
     };
+  
     fetchAndDecryptData();
   }, [isSdkInitialized, currentSubCategory]);
 
-  const filterDataByMonthAndYear = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date }[]) => {
+
+  const filterDataByMonthAndYear = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date, isRead: boolean }[]) => {
     if (selectedMonths.length === 0 && selectedYears.length === 0) return data;
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()) && selectedYears.includes(item.timestamp.getFullYear()));
   };
-  
 // Add this function to generate a list of years
 const generateYearList = (startYear: number, endYear: number) => {
   const years = [];
@@ -119,7 +120,51 @@ const generateYearList = (startYear: number, endYear: number) => {
   }
   return years;
 };
+const markDocumentAsRead = async (documentId: string) => {
+  if (typeof documentId !== 'string') {
+    console.error('documentId is not a string:', documentId);
+    return;
+  }
 
+  try {
+    const db = getFirestore();
+    const documentRef = doc(db, 'posts', documentId);
+    await updateDoc(documentRef, {
+      isRead: true
+    });
+  } catch (error) {
+    console.error('Error in markDocumentAsRead:', error);
+  }
+};
+
+const toggleDocumentReadStatus = async (documentId: string): Promise<boolean> => {
+  if (typeof documentId !== 'string') {
+    console.error('documentId is not a string:', documentId);
+    return false;
+  }
+
+  try {
+    const db = getFirestore();
+    const documentRef = doc(db, 'posts', documentId);
+    const docSnap = await getDoc(documentRef);
+
+    if (!docSnap.exists()) {
+      console.error(`No document found with ID ${documentId}`);
+      return false;
+    }
+
+    const isRead = docSnap.data().isRead;
+    await updateDoc(documentRef, {
+      isRead: !isRead
+    });
+
+    console.log(`Document ${documentId} read status toggled to ${!isRead}`);
+    return true;
+  } catch (error) {
+    console.error('Error toggling document read status:', error);
+    return false;
+  }
+};
 const yearList = generateYearList(2024, 2035);
 
   const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'MASTER_SHEET_CHANGES', 'PREMIUM_HISTORY_ALL'];
@@ -258,6 +303,11 @@ const yearList = generateYearList(2024, 2035);
   </div>
 )}
   <div>
+  <div style={{ display: 'flex', justifyContent: 'center', margin: '10px' }}>
+  <button style={buttonStyle} onClick={() => setFilterReadStatus('all')}>Show All</button>
+  <button style={buttonStyle} onClick={() => setFilterReadStatus('read')}>Show Read</button>
+  <button style={buttonStyle} onClick={() => setFilterReadStatus('unread')}>Show Unread</button>
+</div>
   <div style={{ display: 'inline-block', borderBottom: '2px solid black', paddingBottom: '5px' }}>
   <h2 style={{ marginTop: '20px', fontSize: '25px', fontWeight: 'bold' }}>Document Queue:</h2>
 </div>    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>     
@@ -272,106 +322,137 @@ const yearList = generateYearList(2024, 2035);
 </button>
       </h2>
       {isL831Visible && (
-        <div>
-          {selectedSubCategories.map(subCategory => {
-            let filteredData = newData.filter(data => 
-              data.subCategory === subCategory && 
-              data.union.includes('L831')
-            );
-            filteredData = filterDataByMonthAndYear(filteredData);
-            filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  <div>
+    {selectedSubCategories.map(subCategory => {
+      let filteredData = newData.filter(data => 
+        data.subCategory === subCategory && 
+        data.union.includes('L831') &&
+        (filterReadStatus === 'all' || (filterReadStatus === 'read' && data.isRead) || (filterReadStatus === 'unread' && !data.isRead))
+      );
+      filteredData = filterDataByMonthAndYear(filteredData);
+      filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-            if (filteredData.length === 0) {
-              return <p key={subCategory}>No data available for {subCategory}</p>
+      if (filteredData.length === 0) {
+        return <p key={subCategory}>No data available for {subCategory}</p>
+      }
+      return filteredData.map((data, index) => (
+        <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+          <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+          <p>Decrypted title: {data.image}</p>
+          <a href={data.url} download target="_blank">
+            <button style={buttonStyle}>Download</button>
+          </a>
+          <button style={buttonStyle} onClick={async () => {
+            const success = await toggleDocumentReadStatus(data.id);
+            if (success) {
+              // If the operation was successful, update the isRead status in the state
+              setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
             }
-            return filteredData.map((data, index) => (
-              <div key={index} style={boxStyle}>
-                <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-                <p>Decrypted image title: {data.image}</p>
-                <a href={data.url} download target="_blank">
-                  <button style={buttonStyle}>Download</button>
-                </a>
-              </div>
-            ));
-          })}
+          }}>
+            {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+          </button>
         </div>
-      )}
-    </div>
-
-    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
-      <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
-        COBA 
-        <button 
-          onClick={() => setCOBAVisible(!isCOBAVisible)}
-          style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
-        >
-          Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
-        </button>
-      </h2>
-      {isCOBAVisible && (
-        <div>
-          {selectedSubCategories.map(subCategory => {
-            let filteredData = newData.filter(data => 
-              data.subCategory === subCategory && 
-              data.union.includes('COBA')
-            );
-            filteredData = filterDataByMonthAndYear(filteredData);
-            filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-            if (filteredData.length === 0) {
-              return <p key={subCategory}>No data available for {subCategory}</p>
-            }
-            return filteredData.map((data, index) => (
-              <div key={index} style={boxStyle}>
-                <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-                <p>Decrypted data for ID {data.id}:</p>
-                <p>Document title: {data.image}</p>
-                <a href={data.url} download target="_blank">
-                  <button style={buttonStyle}>Download</button>
-                </a>
-              </div>
-            ));
-          })}
-        </div>
-      )}
-    </div>
-    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
-    <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
-      MISC 
-      <button 
-        onClick={() => setMISCVisible(!isMISCVisible)}
-        style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
-      >
-        Toggle {isMISCVisible ? <FaCaretUp /> : <FaCaretRight />}
-      </button>
-    </h2>
-    {isMISCVisible && (
-      <div>
-        {selectedSubCategories.map(subCategory => {
-          let filteredData = newData.filter(data => 
-            data.subCategory === subCategory && 
-            data.union.includes('MISC')
-          );
-          filteredData = filterDataByMonthAndYear(filteredData);
-          filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-          if (filteredData.length === 0) {
-            return <p key={subCategory}>No data available for {subCategory}</p>
-          }
-          return filteredData.map((data, index) => (
-            <div key={index} style={boxStyle}>
-              <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-              <p>Document title: {data.image}</p>
-              <a href={data.url} download target="_blank">
-                <button style={buttonStyle}>Download</button>
-              </a>
-            </div>
-          ));
-        })}
-      </div>
-    )}
+      ));
+    })}
   </div>
+)}
+    </div>
+
+    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
+  <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+    COBA 
+    <button 
+      onClick={() => setCOBAVisible(!isCOBAVisible)}
+      style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+    >
+      Toggle {isCOBAVisible ? <FaCaretUp /> : <FaCaretRight />}
+    </button>
+  </h2>
+  {isCOBAVisible && (
+    <div>
+      {selectedSubCategories.map(subCategory => {
+        let filteredData = newData.filter(data => 
+          data.subCategory === subCategory && 
+          data.union.includes('COBA') &&
+          (filterReadStatus === 'all' || (filterReadStatus === 'read' && data.isRead) || (filterReadStatus === 'unread' && !data.isRead))
+        );
+        filteredData = filterDataByMonthAndYear(filteredData);
+        filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+
+        if (filteredData.length === 0) {
+          return <p key={subCategory}>No data available for {subCategory}</p>
+        }
+        return filteredData.map((data, index) => (
+          <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+            <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+            <p>Decrypted title: {data.image}</p>
+            <a href={data.url} download target="_blank">
+              <button style={buttonStyle}>Download</button>
+            </a>
+            <button style={buttonStyle} onClick={async () => {
+              const success = await toggleDocumentReadStatus(data.id);
+              if (success) {
+                // If the operation was successful, update the isRead status in the state
+                setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
+              }
+            }}>
+              {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+            </button>
+          </div>
+        ));
+      })}
+    </div>
+  )}
 </div>
+<div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
+<h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+  MISC 
+  <button 
+    onClick={() => setMISCVisible(!isMISCVisible)}
+    style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+  >
+    Toggle {isMISCVisible ? <FaCaretUp /> : <FaCaretRight />}
+  </button>
+</h2>
+{isMISCVisible && (
+  <div>
+    {selectedSubCategories.map(subCategory => {
+      let filteredData = newData.filter(data => 
+        data.subCategory === subCategory && 
+        data.union.includes('MISC') &&
+        (filterReadStatus === 'all' || (filterReadStatus === 'read' && data.isRead) || (filterReadStatus === 'unread' && !data.isRead))
+      );
+      filteredData = filterDataByMonthAndYear(filteredData);
+      filteredData.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+
+      if (filteredData.length === 0) {
+        return <p key={subCategory}>No data available for {subCategory}</p>
+      }
+      return filteredData.map((data, index) => (
+        <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+          <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+          <p>Decrypted title: {data.image}</p>
+          <a href={data.url} download target="_blank">
+            <button style={buttonStyle}>Download</button>
+          </a>
+          <button style={buttonStyle} onClick={async () => {
+            const success = await toggleDocumentReadStatus(data.id);
+            if (success) {
+              // If the operation was successful, update the isRead status in the state
+              setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
+            }
+          }}>
+            {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+          </button>
+        </div>
+      ));
+    })}
   </div>
-  );
+)}
+</div>
+</div>
+</div>
+);
 }
