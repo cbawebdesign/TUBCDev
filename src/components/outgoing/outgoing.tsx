@@ -14,6 +14,7 @@ export default function OutgoingPage() {
 
   const [documents, setDocuments] = useState<{ change: string[] }[]>([]);
   const [documentsTwo, setDocumentsTwo] = useState<Document[]>([]);
+  const [scriptStatus, setScriptStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
 
   const toggleLineSelection = (documentId: string, lineIndex: number) => {
     setSelectedLines(prevState => ({
@@ -73,11 +74,29 @@ const deleteLine = (documentId: string, lineIndex: number) => {
     })
     .catch(error => console.error('Error deleting line:', error));
 };
-
+const triggerPythonScript = () => {
+  setScriptStatus('running');
+  fetch('/api/trigger/trigger', {
+    method: 'POST',
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Python script executed:', data);
+      setScriptStatus('success');
+    })
+    .catch(error => {
+      console.error('Error running Python script:', error);
+      setScriptStatus('error');
+    });
+};
 return (
     <div>
+       <button onClick={triggerPythonScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull Latest Changes</button>
+  {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
+  {scriptStatus === 'success' && <p>Updates pulled successfully, please refresh your page.</p>}
+  {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
       <div style={{ marginBottom: '20px', border: '2px solid fuchsia', padding: '10px' }}>
-        <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>Weekly Changes:</h2>
+        <h2 style={{ color: 'fuchsia ', textAlign: 'center' }}>Weekly Changes:</h2>
         {documents.map((document, documentIndex) => (
           <div key={documentIndex}>
             {document.change && <pre>
@@ -91,7 +110,7 @@ return (
         ))}
       </div>
       <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
-      <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>NY Output Files Que:</h2>
+      <h2 style={{ color: 'fuschia', textAlign: 'center' }}>NY Output Files Que:</h2>
       {documentsTwo.map((document, documentIndex) => (
         <div key={documentIndex}>
           {document.change && document.change.map((line, lineIndex) => (
@@ -108,12 +127,12 @@ return (
           ))}
         </div>
       ))}
-      <button onClick={deleteSelectedLines} style={{ backgroundColor: 'red', color: 'white', border: 'none' }}>Delete Selected</button>
-    </div>
-
+<button onClick={deleteSelectedLines} style={{ backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>Delete Selected</button>    
+</div>
+   
 
     <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
-  <h2 style={{ color: 'fuchsia', textAlign: 'center' }}>Sent NY Files:</h2>
+  <h2 style={{ color: 'fucshia', textAlign: 'center' }}>Sent NY Files:</h2>
   <h2 style={{  textAlign: 'left' }}>Sent 3-21-24</h2>
   <pre>
     {`1536379     F459270015363790000002024-03-218271C2024-03-21605BM68412024-03-200000000000000
@@ -121,7 +140,25 @@ return (
 1929292     F459270019292920000002024-03-218271A2024-03-21605BM68419999-12-310000000004489
 1730397     F459270017303970000002024-03-198271A2024-03-19605BM68419999-12-310000000004535`}
   </pre>
+  <h2 style={{  textAlign: 'left' }}>Sent 04-04-24</h2>
+  <pre>
+    {`0375882     F459270003758820000002024-03-290721C2024-03-29605BM70449999-12-311000000000000
+0522500     F459270005225000000002024-03-290721C2024-03-29605BM70449999-12-311000000000000
+1021486     F459270010214860000002024-03-290721C2024-03-29605BM70449999-12-311000000000000
+1077752     F459270010777520000002024-03-290721C2024-03-29605BM70449999-12-311000000007385
+1163669     F459270011636690000002024-03-290721C2024-03-29605BM70449999-12-311000000000000
+1478869     F459270014788690000002024-03-290721C2024-03-29605BM70449999-12-311000000000000
+1601146     F459270016011460000002024-03-290721C2024-03-29605BM70449999-12-311000000000831
+1625106     F459270016251060000002024-03-290721C2024-03-29605BM70449999-12-311000000004466
+1672319     F459270016723190000002024-03-298271A2024-03-29605BM68419999-12-310000000002152
+1700610     F459270017006100000002024-03-290721C2024-03-29605BM70449999-12-311000000002665
+1839715     F459270018397150000002024-03-298271A2024-03-29605BM68419999-12-310000000004131
+1929185     F459270019291850000002024-03-298271A2024-03-29605BM68419999-12-310000000002054
+`}
+  </pre>
 </div>
+
     </div>
+    
   );
 }
