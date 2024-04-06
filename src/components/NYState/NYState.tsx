@@ -58,7 +58,7 @@ export default function UploadPage() {
       } else if (selectedCategories === 'MASTER_SHEET') {
         folder = 'mastersheets';
       }
-      const storageRef = ref(storage, 'groups/' + file.name);
+      const storageRef = ref(storage, `${folder}/${file.name}`);
 
       const uploadTask = uploadBytesResumable(storageRef, file);
 
