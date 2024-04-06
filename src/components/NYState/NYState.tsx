@@ -49,7 +49,7 @@ export default function UploadPage() {
             folder = 'pastpaycoba';
             break;
           case 'L831':
-            folder = 'pastpayL831';
+            folder = 'pastpayl831';
             break;
           default:
             folder = 'pastpayfiles';
