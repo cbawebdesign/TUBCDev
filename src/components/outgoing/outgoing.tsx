@@ -134,10 +134,9 @@ return (
     <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
   <h2 style={{ color: 'fucshia', textAlign: 'center' }}>Sent NY Files:</h2>
  
-  <h2 style={{  textAlign: 'left' }}>Sent 04-18-24</h2>
+  <h2 style={{  textAlign: 'left' }}></h2>
   <pre>
     {`
-1031827     F459270010318270000002024-04-178271C2024-04-17605BM68419999-12-3100000000000000
 `}
   </pre>
 </div>
