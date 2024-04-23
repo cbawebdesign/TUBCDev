@@ -70,11 +70,8 @@ export default function DownloadPage() {
           const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
           const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
   
-          // Convert the Firestore timestamp to a JavaScript Date object
-          const timestampObject = group.timestamp; // Replace with the actual object
-          const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
-          const date = new Date(timestampMilliseconds);
-          console.log(`Date for group ${group.id}:`, date);
+          const date = new Date(group.timestamp);
+console.log(`Date for group ${group.id}:`, date);
   
           let documentId, imageId;
   
@@ -167,7 +164,7 @@ const toggleDocumentReadStatus = async (documentId: string): Promise<boolean> =>
 };
 const yearList = generateYearList(2024, 2035);
 
-  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'MASTER_SHEET_CHANGES', 'PREMIUM_HISTORY_ALL','SENT_NY_FILES','PAST_PAY_FILES','ERROR_FILES'];
+  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'MASTER_SHEET_CHANGES', 'PREMIUM_HISTORY_ALL','SENT_NY_FILES','PAST_PAY_FILES'];
   const subCategories = {
     'PAYFILE_RAW': 'PAYFILE_RAW',
     'PAYFILE_EXTRACTED': 'PAYFILE_EXTRACTED',
@@ -180,7 +177,6 @@ const yearList = generateYearList(2024, 2035);
     'MASTER_SHEET_CHANGES': 'MASTER_SHEET_CHANGES',
     'SENT_NY_FILES': 'SENT_NY_FILES',
     'PAST_PAY_FILES': 'PastPayFile',
-    'ERROR_FILES': 'ERROR_FILES'
   };
   const buttonStyle = {
     backgroundColor: '#FF00FF', /* Fuchsia */

@@ -1,30 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getFirestore,serverTimestamp, doc, setDoc, getDoc } from "firebase/firestore";
-import { initializeApp, getApps } from "firebase/app";
+import * as admin from 'firebase-admin';
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-};
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  });
+}
+
+const db = admin.firestore();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  let app;
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
-  }
-  const db = getFirestore(app);
-
   if (req.method === 'POST') {
     try {
       const encryptedFileName = req.body.fileName;
-      const originalFileName = req.body.originalFileName; // Get the original file name
       const encryptedUrl = req.body.url;
       const categories = req.body.categories; // Get the categories from the request body
       const union = req.body.union; // Get the categories from the request body
@@ -33,10 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Document name:', docName);
 
       // Fetch the group document
-      const groupDocRef = doc(db, 'groups', docName);
-      const groupDocSnap = await getDoc(groupDocRef);
+      const groupDocRef = db.collection('groups').doc(docName);
+      const groupDocSnap = await groupDocRef.get();
 
-      if (groupDocSnap.exists()) {
+      if (groupDocSnap.exists) {
         const groupData = groupDocSnap.data();
         const members = groupData?.members || [];
 
@@ -44,23 +33,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const postDocName = Math.random().toString(36).substring(2);
 
         // Create a new post document
-        const postDocRef = doc(db, 'posts', postDocName);
-        await setDoc(postDocRef, {
-          image: encryptedFileName, // Use the encrypted fileName here
+        const postDocRef = db.collection('posts').doc(postDocName);
+        await postDocRef.set({
+          image: encryptedFileName,
           downloadURL: encryptedUrl,
           users: members,
-          categories: categories, // Add the categories field
-          timestamp: serverTimestamp(),// Add the timestamp field
-          union: union
-
+          categories: categories,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          union: union,
         });
 
-        res.status(200).json({ message: 'File uploaded successfully', group: docName});
+        res.status(200).json({ message: 'Post created successfully' });
       } else {
-        res.status(404).json({ error: `Group '${docName}' not found` });
+        res.status(404).json({ error: 'Group not found' });
       }
     } catch (error) {
-      console.error('Error uploading file:', (error as Error).message);
+      console.error('Error creating post:', (error as Error).message);
       res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });
     }
   } else {

@@ -1,50 +1,34 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp , getApps} from 'firebase/app';
-import { getFirestore, collection, query as firestoreQuery, where, getDocs } from 'firebase/firestore';
+import * as admin from 'firebase-admin';
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-};
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  });
+}
+
+const db = admin.firestore();
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  let app;
-
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
-  }
-
-  const db = getFirestore(app);  
-
   if (req.method === 'POST') {
     try {
       const { userName, categories } = req.body as { userName: string, categories: string };
-      const postsCollection = collection(db, 'posts');
-      const q = firestoreQuery(postsCollection, where('users', 'array-contains', userName), where('categories', '==', categories));
-      const postDocsSnapshot = await getDocs(q);
-      postDocsSnapshot.docs.forEach(doc => {
-        const timestamp = doc.data().timestamp;
-        const date = timestamp.toDate();
-        console.log(`Timestamp for document ${doc.id}:`,timestamp, date);
+      const postsCollection = db.collection('posts');
+      const q = postsCollection.where('users', 'array-contains', userName).where('categories', '==', categories);
+      const postDocsSnapshot = await q.get();
+      const posts = postDocsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          fileName: data.filename,
+          url: data.downloadURL,
+          image: data.image,
+          timestamp: data.timestamp instanceof admin.firestore.Timestamp ? data.timestamp.toDate() : null,
+          union: data.union,
+          id: doc.id,
+          isRead: data.isRead,
+        };
       });
-      const posts = postDocsSnapshot.docs.map(doc => ({
-   
-        fileName: doc.data().filename,
-        url: doc.data().downloadURL,
-        image: doc.data().image, // assuming the field in your Firestore document is named 'image'
-        timestamp: doc.data().timestamp, // add this line
-        union: doc.data().union,
-        id: doc.id, // add this line
-        isRead: doc.data().isRead, // add this line
-
-
-      }));
 
       res.status(200).json(posts);
     } catch (error) {
