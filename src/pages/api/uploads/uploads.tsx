@@ -1,9 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import * as admin from 'firebase-admin';
 
+
 if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString());
+
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.cert(serviceAccount),
     databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
   });
 }
