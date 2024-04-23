@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import * as admin from 'firebase-admin';
 
-
 if (!admin.apps.length) {
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    throw new Error('The GOOGLE_APPLICATION_CREDENTIALS environment variable is not defined');
+  }
+
   const serviceAccount = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString());
 
   admin.initializeApp({
