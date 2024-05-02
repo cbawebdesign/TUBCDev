@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import * as admin from 'firebase-admin';
 
-import { NextApiRequest, NextApiResponse } from 'next';
-import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
   admin.initializeApp({
