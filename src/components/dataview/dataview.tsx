@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { initialize, document } from '@ironcorelabs/ironweb';
 import { getAuth } from "firebase/auth";
@@ -7,12 +8,12 @@ import Button from '~/core/ui/Button';
 import { Timestamp } from "firebase/firestore";
 import { FaCaretDown, FaCaretRight, FaCaretUp } from 'react-icons/fa';
 export default function DownloadPage() {
-  const [isSdkInitialized, setSdkInitialized] = useState(false);
-  const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
+  const [isSdkInitialized, setSdkInitialized] = useState<boolean>(false);
+    const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
   const [newData, setNewData] = useState<{ timestamp: Date, id: string, url: string, image: string, subCategory: string | null, category: string, union: string, isRead: boolean }[]>([]);   const [currentCategory, setCurrentCategory] = useState<string | null>(null); // <-- Add this line here
           const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
           const [currentSubCategory, setCurrentSubCategory] = useState<string | null>(null);
-          const [isL831Visible, setL831Visible] = useState(true);
+                    const [isL831Visible, setL831Visible] = useState(true);
           const [isCOBAVisible, setCOBAVisible] = useState(true);
           const [isMISCVisible, setMISCVisible] = useState(true);
           const [selectedYears, setSelectedYears] = useState<number[]>([]);
@@ -63,48 +64,70 @@ export default function DownloadPage() {
         body: JSON.stringify(requestBody),
       });
       const groups = await response.json();
-  
+      const newDataArray = [...newData]; // Create a copy of the current state
       for (const group of groups) {
+        let decryptedText: string | null = null;
+        let decryptedImageText: string | null = null;
+      
         if (group.url && group.image) {
-          const encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
-          const encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
-  
+          let encryptedDataBytes, encryptedImageBytes;
+      
+          if (group.isEncrypted === false) {
+            // If isEncrypted is explicitly false, use the url and image as is
+            decryptedText = group.url;
+            decryptedImageText = group.image;
+          } else {
+            encryptedDataBytes = new Uint8Array(atob(group.url).split("").map((c) => c.charCodeAt(0)));
+            encryptedImageBytes = new Uint8Array(atob(group.image).split("").map((c) => c.charCodeAt(0)));
+      
+            let documentId, imageId;
+      
+            try {
+              documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
+              imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
+            } catch (error) {
+              console.error(`Error getting document ID for group ${group.id}:`, error);
+              continue;
+            }
+      
+            if (documentId && imageId) {
+              const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
+              const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
+              decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
+              decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
+            } else if (!documentId) {
+              console.error(`Document ID is null for group ${group.id}`);
+            } else {
+              console.error(`URL or image is missing for group ${group.id}`);
+            }
+          }
+      
           // Convert the Firestore timestamp to a JavaScript Date object
-          const timestampObject = group.timestamp; // Replace with the actual object
+          const timestampObject = group.timestamp;
           const timestampMilliseconds = timestampObject.seconds * 1000 + timestampObject.nanoseconds / 1000000;
           const date = new Date(timestampMilliseconds);
           console.log(`Date for group ${group.id}:`, date);
-  
-          let documentId, imageId;
-  
-          try {
-            documentId = await document.getDocumentIDFromBytes(encryptedDataBytes);
-            imageId = await document.getDocumentIDFromBytes(encryptedImageBytes);
-          } catch (error) {
-            console.error(`Error getting document ID for group ${group.id}:`, error);
-            continue;
+      
+          // Check if the document for the current subcategory is already in the newData state
+          if (decryptedText && decryptedImageText && !newData.some(data => data.subCategory === currentSubCategory)) {
+            setNewData(prevData => [...prevData, { 
+              timestamp: date, 
+              id: group.id, 
+              url: decryptedText || '', // provide a default value
+              image: decryptedImageText || '', // provide a default value
+              category: currentCategory, 
+              subCategory: currentSubCategory, 
+              union: group.union, 
+              isRead: group.isRead 
+            }]);
           }
-          if (documentId && imageId) {
-            const decryptedData = await document.decrypt(documentId, encryptedDataBytes);
-            const decryptedImage = await document.decrypt(imageId, encryptedImageBytes);
-            const decryptedText = new TextDecoder().decode(new Uint8Array(decryptedData.data));
-            const decryptedImageText = new TextDecoder().decode(new Uint8Array(decryptedImage.data));
-  
-            // Check if the document for the current subcategory is already in the newData state
-            if (!newData.some(data => data.subCategory === currentSubCategory)) {
-              setNewData(prevData => [...prevData, { timestamp: date, id: group.id, url: decryptedText, image: decryptedImageText, category: currentCategory, subCategory: currentSubCategory, union: group.union, isRead: group.isRead }]);
-            }
-          } else if (!documentId) {
-            console.error(`Document ID is null for group ${group.id}`);
-          } else {
-            console.error(`URL or image is missing for group ${group.id}`);
-          }
+        
         }
       }
-    };
-  
-    fetchAndDecryptData();
-  }, [isSdkInitialized, currentSubCategory]);
+      };
+      
+      fetchAndDecryptData();
+      }, [isSdkInitialized, currentSubCategory]);
 
 
   const filterDataByMonthAndYear = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date, isRead: boolean }[]) => {
@@ -166,7 +189,7 @@ const toggleDocumentReadStatus = async (documentId: string): Promise<boolean> =>
 };
 const yearList = generateYearList(2024, 2035);
 
-  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'MASTER_SHEET_CHANGES', 'PREMIUM_HISTORY_ALL','SENT_NY_FILES','PAST_PAY_FILES','ERROR_FILES'];
+  const mainCategories = ['PAYFILE_RAW', 'PAYFILE_EXTRACTED', 'MISMATCHED_PREMIUMS', 'USERS_NOT_IN_DATABASE', 'ACTIVE_USERS_MISSING', 'DEDUCTION_STATUS_CHANGES', 'PREMIUM_MISMATCHES_ALL', 'MASTER_SHEET_CHANGES', 'PREMIUM_HISTORY_ALL','SENT_NY_FILES','PAST_PAY_FILES'];
   const subCategories = {
     'PAYFILE_RAW': 'PAYFILE_RAW',
     'PAYFILE_EXTRACTED': 'PAYFILE_EXTRACTED',
@@ -179,7 +202,6 @@ const yearList = generateYearList(2024, 2035);
     'MASTER_SHEET_CHANGES': 'MASTER_SHEET_CHANGES',
     'SENT_NY_FILES': 'SENT_NY_FILES',
     'PAST_PAY_FILES': 'PastPayFile',
-    'ERROR_FILES': 'ERROR_FILES'
   };
   const buttonStyle = {
     backgroundColor: '#FF00FF', /* Fuchsia */
