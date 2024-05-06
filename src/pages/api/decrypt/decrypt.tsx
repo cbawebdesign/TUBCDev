@@ -42,6 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         union: doc.data().union,
         id: doc.id, // add this line
         isRead: doc.data().isRead, // add this line
+        isEncrypted: doc.data().isEncrypted, // add this line
 
 
       }));
