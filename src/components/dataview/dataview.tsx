@@ -18,6 +18,7 @@ export default function DownloadPage() {
           const [isMISCVisible, setMISCVisible] = useState(true);
           const [selectedYears, setSelectedYears] = useState<number[]>([]);
           const [filterReadStatus, setFilterReadStatus] = useState<'all' | 'read' | 'unread'>('all');
+          const [scriptStatus, setScriptStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     initialize(
@@ -142,6 +143,23 @@ const generateYearList = (startYear: number, endYear: number) => {
   }
   return years;
 };
+
+const triggerPythonScript = () => {
+  setScriptStatus('running');
+  fetch('/api/phtrigger/phtrigger', {
+    method: 'POST',
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Python script executed:', data);
+      setScriptStatus('success');
+    })
+    .catch(error => {
+      console.error('Error running Python script:', error);
+      setScriptStatus('error');
+    });
+};
+
 const markDocumentAsRead = async (documentId: string) => {
   if (typeof documentId !== 'string') {
     console.error('documentId is not a string:', documentId);
@@ -332,6 +350,14 @@ const yearList = generateYearList(2024, 2035);
   <button style={buttonStyle} onClick={() => setFilterReadStatus('read')}>Show Read</button>
   <button style={buttonStyle} onClick={() => setFilterReadStatus('unread')}>Show Unread</button>
 </div>
+<div>
+  <button onClick={triggerPythonScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull New Premium History + Mismatches</button>
+  {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
+  {scriptStatus === 'success' && <p>Updates pulled successfully, please toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
+  {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
+</div>
+
+
   <div style={{ display: 'inline-block', borderBottom: '2px solid black', paddingBottom: '5px' }}>
   <h2 style={{ marginTop: '20px', fontSize: '25px', fontWeight: 'bold' }}>Document Queue:</h2>
 </div>    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>     
