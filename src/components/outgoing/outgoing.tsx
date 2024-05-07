@@ -134,7 +134,7 @@ return (
     <div style={{ marginTop: '20px', border: '2px solid fuchsia', padding: '10px' }}>
   <h2 style={{ color: 'fucshia', textAlign: 'center' }}>Sent NY Files:</h2>
   
-  
+ 
   <h2 style={{  textAlign: 'left' }}></h2>
   <pre>
     {`
