@@ -144,7 +144,7 @@ const generateYearList = (startYear: number, endYear: number) => {
   return years;
 };
 
-const triggerPythonScript = () => {
+const triggerScript = () => {
   setScriptStatus('running');
   fetch('/api/phtrigger/phtrigger', {
     method: 'POST',
@@ -351,7 +351,7 @@ const yearList = generateYearList(2024, 2035);
   <button style={buttonStyle} onClick={() => setFilterReadStatus('unread')}>Show Unread</button>
 </div>
 <div>
-  <button onClick={triggerPythonScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull New Premium History + Mismatches</button>
+  <button onClick={triggerScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull New Premium History + Mismatches</button>
   {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
   {scriptStatus === 'success' && <p>Updates pulled successfully, please toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
   {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
