@@ -354,7 +354,7 @@ const yearList = generateYearList(2024, 2035);
   <button onClick={triggerScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull New Premium History + Mismatches</button>
   {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
   {scriptStatus === 'success' && <p>Updates pulled successfully, please toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
-  {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
+  {scriptStatus === 'error' && <p>Updates pulled successfully, please wait 1-2 minutes to toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
 </div>
 
 
