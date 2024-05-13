@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp , getApps} from 'firebase/app';
-import { getFirestore, collection, query as firestoreQuery, where, getDocs } from 'firebase/firestore';
+import { initializeApp , getApps } from 'firebase/app';
+import { getFirestore, collection, query as firestoreQuery, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,6 +11,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   let app;
 
@@ -34,22 +35,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`Timestamp for document ${doc.id}:`,timestamp, date);
       });
       const posts = postDocsSnapshot.docs.map(doc => ({
-   
         fileName: doc.data().filename,
         url: doc.data().downloadURL,
-        image: doc.data().image, // assuming the field in your Firestore document is named 'image'
-        timestamp: doc.data().timestamp, // add this line
+        image: doc.data().image,
+        timestamp: doc.data().timestamp,
         union: doc.data().union,
-        id: doc.id, // add this line
-        isRead: doc.data().isRead, // add this line
-        isEncrypted: doc.data().isEncrypted, // add this line
-
-
+        id: doc.id,
+        isRead: doc.data().isRead,
+        isEncrypted: doc.data().isEncrypted,
       }));
 
       res.status(200).json(posts);
     } catch (error) {
       console.error('Error fetching posts:', (error as Error).message);
+      res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });
+    }
+  } else if (req.method === 'DELETE') {
+    try {
+      const { id } = req.body as { id: string };
+      const postDoc = doc(db, 'posts', id);
+      await deleteDoc(postDoc);
+      res.status(200).end('Post deleted');
+    } catch (error) {
+      console.error('Error deleting post:', (error as Error).message);
       res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });
     }
   } else {

@@ -119,7 +119,9 @@ export default function DownloadPage() {
               category: currentCategory, 
               subCategory: currentSubCategory, 
               union: group.union, 
-              isRead: group.isRead 
+              isRead: group.isRead,
+              delete: () => setNewData(prevData => prevData.filter(data => data.id !== group.id)) // Add delete function
+
             }]);
           }
         
@@ -130,7 +132,25 @@ export default function DownloadPage() {
       fetchAndDecryptData();
       }, [isSdkInitialized, currentSubCategory]);
 
-
+      const deletePost = async (id: string) => {
+        try {
+          const response = await fetch('/api/decrypt/decrypt', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id }),
+          });
+      
+          if (!response.ok) {
+            throw new Error('Response not OK');
+          }
+      
+          setNewData(prevData => prevData.filter(data => data.id !== id));
+        } catch (error) {
+          console.error('Error deleting post:', error);
+        }
+      };
   const filterDataByMonthAndYear = (data: { union: string, id: string, url: string, image: string, subCategory: string | null, category: string, timestamp: Date, isRead: boolean }[]) => {
     if (selectedMonths.length === 0 && selectedYears.length === 0) return data;
     return data.filter(item => selectedMonths.includes(item.timestamp.getMonth()) && selectedYears.includes(item.timestamp.getFullYear()));
@@ -351,11 +371,26 @@ const yearList = generateYearList(2024, 2035);
   <button style={buttonStyle} onClick={() => setFilterReadStatus('unread')}>Show Unread</button>
 </div>
 <div>
-  <button onClick={triggerScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull New Premium History + Mismatches</button>
-  {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
-  {scriptStatus === 'success' && <p>Updates pulled successfully, please toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
-  {scriptStatus === 'error' && <p>Updates pulled successfully, please wait 1-2 minutes to toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
+ <button 
+ onClick={triggerScript} 
+ style={{ 
+   backgroundColor: scriptStatus === 'running' ? 'gray' : '#4CAF50', 
+   color: 'white', 
+   border: 'none', 
+   borderRadius: '4px', 
+   padding: '10px 20px', 
+   fontSize: '16px', 
+   margin: '0 0 20px 0' 
+ }} 
+ disabled={scriptStatus === 'running' || scriptStatus === 'success' || scriptStatus === 'error'}
+>
+ Pull New Premium History + Mismatches
+</button>
+{scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
+{scriptStatus === 'success' && <p>Updates pulled successfully, please toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
+{scriptStatus === 'error' && <p>Updates pulled successfully, please wait 1-2 minutes to toggle on the Premium_History_All+ Premium_Mismatches_All categories.</p>}
 </div>
+
 
 
   <div style={{ display: 'inline-block', borderBottom: '2px solid black', paddingBottom: '5px' }}>
@@ -401,6 +436,11 @@ const yearList = generateYearList(2024, 2035);
           }}>
             {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
           </button>
+          <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+  if (window.confirm('Are you sure you want to delete this post?')) {
+    deletePost(data.id);
+  }
+}}>Delete</button>
         </div>
       ));
     })}
@@ -449,6 +489,11 @@ const yearList = generateYearList(2024, 2035);
             }}>
               {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
             </button>
+            <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+  if (window.confirm('Are you sure you want to delete this post?')) {
+    deletePost(data.id);
+  }
+}}>Delete</button>
           </div>
         ));
       })}
@@ -496,6 +541,11 @@ const yearList = generateYearList(2024, 2035);
           }}>
             {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
           </button>
+          <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+  if (window.confirm('Are you sure you want to delete this post?')) {
+    deletePost(data.id);
+  }
+}}>Delete</button>
         </div>
       ));
     })}
