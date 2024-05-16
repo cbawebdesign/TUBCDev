@@ -543,7 +543,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
   Current NY Deduction
   <TextField.Input
     className={'max-w-sm'}
-    value={searchResult.current_deduction}
+    value={searchResult.premium_date && searchResult.premium_date.length > 0 ? searchResult.premium_date.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].premium : 'No premium history'}
     readOnly
   />
 </TextField.Label>

@@ -241,7 +241,7 @@ const yearList = generateYearList(2024, 2035);
     'SENT_NY_FILES': 'SENT_NY_FILES',
     'PAST_PAY_FILES': 'PastPayFile',
   };
-  const buttonStyle = {
+   const buttonStyle = {
     backgroundColor: '#FF00FF', /* Fuchsia */
     border: 'none',
     color: 'white',
@@ -397,16 +397,16 @@ const yearList = generateYearList(2024, 2035);
   <h2 style={{ marginTop: '20px', fontSize: '25px', fontWeight: 'bold' }}>Document Queue:</h2>
 </div>    <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>     
 
-      <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
-        L831 
-        <button 
-  onClick={() => setL831Visible(!isL831Visible)}
-  style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
->
-  Toggle {isL831Visible ? <FaCaretUp /> : <FaCaretRight />}
-</button>
-      </h2>
-      {isL831Visible && (
+<h2 style={{ fontFamily: 'Arial, sans-serif' }}>
+  L831 
+  <button 
+    onClick={() => setL831Visible(!isL831Visible)}
+    style={{ margin: '10px', transition: 'background-color 0.3s ease', display: 'flex', alignItems: 'center' }}
+  >
+    Toggle {isL831Visible ? <FaCaretUp /> : <FaCaretRight />}
+  </button>
+</h2>
+{isL831Visible && (
   <div>
     {selectedSubCategories.map(subCategory => {
       let filteredData = newData.filter(data => 
@@ -420,33 +420,43 @@ const yearList = generateYearList(2024, 2035);
       if (filteredData.length === 0) {
         return <p key={subCategory}>No data available for {subCategory}</p>
       }
-      return filteredData.map((data, index) => (
-        <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
-          <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-          <p>Decrypted title: {data.image}</p>
-          <a href={data.url} download target="_blank">
-            <button style={buttonStyle}>Download</button>
-          </a>
-          <button style={buttonStyle} onClick={async () => {
-            const success = await toggleDocumentReadStatus(data.id);
-            if (success) {
-              // If the operation was successful, update the isRead status in the state
-              setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
-            }
-          }}>
-            {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
-          </button>
-          <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
-  if (window.confirm('Are you sure you want to delete this post?')) {
-    deletePost(data.id);
-  }
-}}>Delete</button>
-        </div>
-      ));
+      return filteredData.map((data, index) => {
+        const date = data.timestamp.getDate();
+        const month = data.timestamp.getMonth() + 1; // getMonth() returns a zero-based value (where zero indicates the first month)
+        const year = data.timestamp.getFullYear();
+        const hours = data.timestamp.getHours();
+        const minutes = data.timestamp.getMinutes();
+    
+        return (
+          <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+            <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+            <p>Decrypted title: {data.image}</p>
+            <p>Date & Time: {month}/{date}/{year} {hours}:{minutes < 10 ? `0${minutes}` : minutes}</p>
+
+            <a href={data.url} download target="_blank">
+              <button style={buttonStyle}>Download</button>
+            </a>
+            <button style={buttonStyle} onClick={async () => {
+              const success = await toggleDocumentReadStatus(data.id);
+              if (success) {
+                // If the operation was successful, update the isRead status in the state
+                setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
+              }
+            }}>
+              {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+            </button>
+            <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+              if (window.confirm('Are you sure you want to delete this post?')) {
+                deletePost(data.id);
+              }
+            }}>Delete</button>
+          </div>
+        );
+      });
     })}
   </div>
 )}
-    </div>
+</div>
 
     <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
   <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -473,32 +483,41 @@ const yearList = generateYearList(2024, 2035);
         if (filteredData.length === 0) {
           return <p key={subCategory}>No data available for {subCategory}</p>
         }
-        return filteredData.map((data, index) => (
-          <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
-            <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-            <p>Decrypted title: {data.image}</p>
-            <a href={data.url} download target="_blank">
-              <button style={buttonStyle}>Download</button>
-            </a>
-            <button style={buttonStyle} onClick={async () => {
-              const success = await toggleDocumentReadStatus(data.id);
-              if (success) {
-                // If the operation was successful, update the isRead status in the state
-                setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
-              }
-            }}>
-              {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
-            </button>
-            <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
-  if (window.confirm('Are you sure you want to delete this post?')) {
-    deletePost(data.id);
-  }
-}}>Delete</button>
-          </div>
-        ));
-      })}
-    </div>
-  )}
+      return filteredData.map((data, index) => {
+  const date = data.timestamp.getDate();
+  const month = data.timestamp.getMonth() + 1; // getMonth() returns a zero-based value (where zero indicates the first month)
+  const year = data.timestamp.getFullYear();
+  const hours = data.timestamp.getHours();
+  const minutes = data.timestamp.getMinutes();
+
+  return (
+    <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+      <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+      <p>Decrypted title: {data.image}</p>
+      <p>Date & Time: {month}/{date}/{year} {hours}:{minutes < 10 ? `0${minutes}` : minutes}</p>
+      <a href={data.url} download target="_blank">
+        <button style={buttonStyle}>Download</button>
+      </a>
+      <button style={buttonStyle} onClick={async () => {
+        const success = await toggleDocumentReadStatus(data.id);
+        if (success) {
+          // If the operation was successful, update the isRead status in the state
+          setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
+        }
+      }}>
+        {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+      </button>
+      <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+          deletePost(data.id);
+        }
+      }}>Delete</button>
+       </div>
+        );
+      });
+    })}
+  </div>
+)}
 </div>
 <div style={{...sectionStyle, border: '1px solid #FF00FF', padding: '10px', margin: '10px'}}>
 <h2 style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -525,29 +544,38 @@ const yearList = generateYearList(2024, 2035);
       if (filteredData.length === 0) {
         return <p key={subCategory}>No data available for {subCategory}</p>
       }
-      return filteredData.map((data, index) => (
-        <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
-          <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
-          <p>Decrypted title: {data.image}</p>
-          <a href={data.url} download target="_blank">
-            <button style={buttonStyle}>Download</button>
-          </a>
-          <button style={buttonStyle} onClick={async () => {
-            const success = await toggleDocumentReadStatus(data.id);
-            if (success) {
-              // If the operation was successful, update the isRead status in the state
-              setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
-            }
-          }}>
-            {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
-          </button>
-          <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
-  if (window.confirm('Are you sure you want to delete this post?')) {
-    deletePost(data.id);
-  }
-}}>Delete</button>
-        </div>
-      ));
+      return filteredData.map((data, index) => {
+        const date = data.timestamp.getDate();
+        const month = data.timestamp.getMonth() + 1; // getMonth() returns a zero-based value (where zero indicates the first month)
+        const year = data.timestamp.getFullYear();
+        const hours = data.timestamp.getHours();
+        const minutes = data.timestamp.getMinutes();
+      
+        return (
+          <div key={index} style={{ ...boxStyle, backgroundColor: data.isRead ? 'teal' : 'grey' }}>
+            <h2 style={{ color: '#FF00FF' }}>SubCategory: {data.subCategory}</h2>
+            <p>Decrypted title: {data.image}</p>
+            <p>Date & Time: {month}/{date}/{year} {hours}:{minutes < 10 ? `0${minutes}` : minutes}</p>
+            <a href={data.url} download target="_blank">
+              <button style={buttonStyle}>Download</button>
+            </a>
+            <button style={buttonStyle} onClick={async () => {
+              const success = await toggleDocumentReadStatus(data.id);
+              if (success) {
+                // If the operation was successful, update the isRead status in the state
+                setNewData(prevData => prevData.map(d => d.id === data.id ? { ...d, isRead: !d.isRead } : d));
+              }
+            }}>
+              {data.isRead ? 'Mark as Unread' : 'Mark as Read'}
+            </button>
+            <button style={{...buttonStyle, backgroundColor: 'red'}} onClick={() => {
+              if (window.confirm('Are you sure you want to delete this post?')) {
+                deletePost(data.id);
+              }
+            }}>Delete</button>
+            </div>
+        );
+      });
     })}
   </div>
 )}
