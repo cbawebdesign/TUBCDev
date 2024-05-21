@@ -78,7 +78,7 @@ export default function AddUnionPage() {
           <input type="text" value={subCode} onChange={(e) => setSubCode(e.target.value)} required style={{ border: '1px solid #FF00FF', color: 'black' }} />
         </label>
         <label>
-          Deduction Code:
+          Deduction Plan:
           <input type="text" value={deductionPlan} onChange={(e) => setDeductionPlan(e.target.value)} required style={{ border: '1px solid #FF00FF', color: 'black' }} />
         </label>
         <button type="submit" style={{ backgroundColor: '#FF00FF', color: 'white', padding: '10px', borderRadius: '5px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Create Union</button>
@@ -90,7 +90,7 @@ export default function AddUnionPage() {
           <h3>{union.unionName}</h3>
           <p>Union Pay Roll Code: {union.unionCode}</p>
           <p>Deduction Code: {union.subCode}</p>
-          <p>Deduction Code: {union.deductionPlan}</p> {/* Display deductionCode */}
+          <p>Deduction Plan: {union.deductionPlan}</p> {/* Display deductionCode */}
 
           <button onClick={() => handleDelete(union.id)} style={{ backgroundColor: '#FF0000', color: 'white', padding: '10px', borderRadius: '5px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Delete Union</button>
         </div>
