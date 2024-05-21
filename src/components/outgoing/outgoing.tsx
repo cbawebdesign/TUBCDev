@@ -91,7 +91,8 @@ const triggerPythonScript = () => {
 };
 return (
     <div>
-       <button onClick={triggerPythonScript} style={{ backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}>Pull Latest Changes</button>
+       <button onClick={triggerPythonScript} style={{ backgroundColor: scriptStatus === 'running' ? 'gray' : '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}  disabled={scriptStatus === 'running' || scriptStatus === 'success' || scriptStatus === 'error'}
+ >Pull Latest Changes</button>
   {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
   {scriptStatus === 'success' && <p>Updates pulled successfully, please refresh your page.</p>}
   {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
