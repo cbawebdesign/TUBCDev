@@ -441,7 +441,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
   <div className="relative inline-block text-gray-700" style={{ width: '450px' }}> {/* Adjust the width here */}
     <select style={{ width: '100%' }}>
       {unions.map((union) => (
-        <option key={union.id} value={union.unionName}>
+        <option key={union.unionName} value={union.unionName}>
           {union.unionName}
         </option>
       ))}
