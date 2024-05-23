@@ -14,7 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const { unionName, unionCode, subCode, deductionPlan } = req.body;
 
-      const unionRecord = await firestore.collection('unions').add({
+      const unionRecordRef = firestore.collection('unions').doc(unionName);
+      await unionRecordRef.set({
         unionName,
         unionCode,
         subCode,
@@ -22,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         'creationDate': firebaseAdmin.firestore.FieldValue.serverTimestamp(), // creation date
       });
 
-      res.status(200).json({ message: 'Union created successfully', id: unionRecord.id });
+      res.status(200).json({ message: 'Union created successfully', id: unionRecordRef.id });
     } catch (error) {
       console.error('Error creating union:', (error as Error).message);
       res.status(500).json({ error: 'Internal Server Error', details: (error as Error).message });
