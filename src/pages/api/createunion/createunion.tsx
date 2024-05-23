@@ -12,13 +12,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { unionName, unionCode, subCode, deductionPlan } = req.body;
+      const { unionName, unionCode, union_value, deductionPlan } = req.body;
 
       const unionRecordRef = firestore.collection('unions').doc(unionName);
       await unionRecordRef.set({
         unionName,
         unionCode,
-        subCode,
+        union_value,
         deductionPlan, // New field
         'creationDate': firebaseAdmin.firestore.FieldValue.serverTimestamp(), // creation date
       });

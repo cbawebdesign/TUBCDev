@@ -3,8 +3,8 @@ import React, { useState, useEffect, FormEvent } from 'react';
 export default function AddUnionPage() {
   const [unionName, setUnionName] = useState('');
   const [unionCode, setUnionCode] = useState('');
-  const [subCode, setSubCode] = useState('');
-  const [unions, setUnions] = useState<{ id: string, deductionPlan:string, unionName: string, unionCode: string, subCode: string }[]>([]);
+  const [union_value, setunion_value] = useState('');
+  const [unions, setUnions] = useState<{ id: string, deductionPlan:string, unionName: string, unionCode: string, union_value: string }[]>([]);
     const [successMessage, setSuccessMessage] = useState(''); // State for success message
     const [deductionPlan, setDeductionPlan] = useState(''); // New state variable
 
@@ -46,7 +46,7 @@ export default function AddUnionPage() {
       body: JSON.stringify({
         unionName,
         unionCode,
-        subCode,
+        union_value,
         deductionPlan
       }),
     });
@@ -74,8 +74,8 @@ export default function AddUnionPage() {
           <input type="text" value={unionCode} onChange={(e) => setUnionCode(e.target.value)} required style={{ border: '1px solid #FF00FF', color: 'black' }} />
         </label>
         <label>
-          Deduction Code:
-          <input type="text" value={subCode} onChange={(e) => setSubCode(e.target.value)} required style={{ border: '1px solid #FF00FF', color: 'black' }} />
+          Sub Code:
+          <input type="text" value={union_value} onChange={(e) => setunion_value(e.target.value)} required style={{ border: '1px solid #FF00FF', color: 'black' }} />
         </label>
         <label>
           Deduction Plan:
@@ -89,7 +89,7 @@ export default function AddUnionPage() {
         <div key={union.id}>
           <h3>{union.unionName}</h3>
           <p>Union Pay Roll Code: {union.unionCode}</p>
-          <p>Deduction Code: {union.subCode}</p>
+          <p>Union Value: {union.union_value}</p>
           <p>Deduction Plan: {union.deductionPlan}</p> {/* Display deductionCode */}
 
           <button onClick={() => handleDelete(union.id)} style={{ backgroundColor: '#FF0000', color: 'white', padding: '10px', borderRadius: '5px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Delete Union</button>
