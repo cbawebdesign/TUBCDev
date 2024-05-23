@@ -149,7 +149,7 @@ function UserAdminPage({
     const [showAllChangeDates, setShowAllChangeDates] = useState(false);
     const [showAllStartDates, setShowAllStartDates] = useState(false);
     const [ActiveInput, setActiveInput] = useState(false);
-
+    const [unions, setUnions] = useState<{ id: string, unionName: string }[]>([]);
     
 const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     useEffect(() => {
@@ -303,7 +303,15 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       }
     };
 
-
+    useEffect(() => {
+      const fetchUnions = async () => {
+        const response = await fetch('/api/createunion/createunion');
+        const data = await response.json();
+        setUnions(data);
+      };
+  
+      fetchUnions();
+    }, []);
     
   return (
     <AdminRouteShell>
@@ -430,15 +438,14 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         </TextField.Label>
         <TextField.Label>
   Union
-  <div className="relative inline-block w-full text-gray-700 w-64"> {/* Adjust the width here */}
-  <select
-  className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline"
-  value={unionInput}
-  onChange={(e) => setUnionInput((e.target as HTMLSelectElement).value)}
->
-<option value="COBA">COBA</option>
-    <option value="L831">L831</option>
-</select>
+  <div className="relative inline-block text-gray-700" style={{ width: '450px' }}> {/* Adjust the width here */}
+    <select style={{ width: '100%' }}>
+      {unions.map((union) => (
+        <option key={union.id} value={union.unionName}>
+          {union.unionName}
+        </option>
+      ))}
+    </select>
     <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
       <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
         <path d="M7 7a1 1 0 011.707-.707l3.586 3.586a1 1 0 01-1.414 1.414l-3.586-3.586A1 1 0 017 7z" />
