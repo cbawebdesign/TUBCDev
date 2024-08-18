@@ -94,8 +94,8 @@ return (
        <button onClick={triggerPythonScript} style={{ backgroundColor: scriptStatus === 'running' ? 'gray' : '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '16px', margin: '0 0 20px 0' }}  disabled={scriptStatus === 'running' || scriptStatus === 'success' || scriptStatus === 'error'}
  >Pull Latest Changes</button>
   {scriptStatus === 'running' && <p>Function is scheduled to run...</p>}
-  {scriptStatus === 'success' && <p>Updates pulled successfully, please refresh your page.</p>}
-  {scriptStatus === 'error' && <p>Error running Python script, please try again.</p>}
+  {scriptStatus === 'success' && <p>Updates pulled successfully, please wait 1-2 minutes and refresh your page.</p>}
+  {scriptStatus === 'error' && <p>Updates pulled successfully, please wait 1-2 minutes and refresh your page.</p>}
       <div style={{ marginBottom: '20px', border: '2px solid fuchsia', padding: '10px' }}>
         <h2 style={{ color: 'fuchsia ', textAlign: 'center' }}>Weekly Changes:</h2>
         {documents.map((document, documentIndex) => (
