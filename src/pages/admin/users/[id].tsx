@@ -135,6 +135,7 @@ function UserAdminPage({
     const [ChangeDateInput, setChangeDateInput] = useState('');
     const [MarkifBWInput, setMarkifBWInput] = useState('');
     const [PreviousTotalPremiumInput, setPreviousTotalPremiumInput] = useState('');
+   
     const [StatusInput, setStatusInput] = useState('');
     const [FirstNameInput, setFirstNameInput] = useState('');
     const [spouseInput, setSpouseInput] = useState('');
@@ -149,6 +150,8 @@ function UserAdminPage({
     const [showAllChangeDates, setShowAllChangeDates] = useState(false);
     const [showAllStartDates, setShowAllStartDates] = useState(false);
     const [ActiveInput, setActiveInput] = useState(false);
+
+    const [CurrentNYDeductionInput, setCurrentNYDeductionInput] = useState('');
 
     
 const [DeductionStatusInput, setDeductionStatusInput] = useState('');
@@ -214,10 +217,19 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         setStatusInput(currentUser.Status);
         setFirstNameInput(currentUser.FirstName);
         setActiveInput(currentUser.Active);
-
+        // Setting the Current NY Deduction Input based on premium_date
+        if (currentUser.premium_date && currentUser.premium_date.length > 0) {
+          const latestPremium = currentUser.premium_date
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+            .premium;
+          setCurrentNYDeductionInput(latestPremium.toString());
+        } else {
+          setCurrentNYDeductionInput('No premium history');
       }
+    }
     }, [searchResults, user.uid]);
-    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string, PolicyEffectiveDate: string, DeductionStatus: string, ActiveInput: boolean) => {
+    const updateUser = async (Status: string, uid: string,CaseNotes:string, LM:string,CurrentTotalPremium:string,union: string, spouse: string, StartDate: string, LastName: string,ChangeDate: string, PolicyEffectiveDate: string, DeductionStatus: string, ActiveInput: boolean,   CurrentNYDeductionInput: string // Include Current NY Deduction
+) => {
       try {
         const requestBody = {
           union: union,
@@ -233,6 +245,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
           PolicyEffectiveDate: PolicyEffectiveDate,
       DeductionStatus: DeductionStatus,
       Active: ActiveInput,
+      CurrentNYDeduction: CurrentNYDeductionInput, // Add the Current NY Deduction here
+
+      
         };
         console.log(requestBody); // Add this line
         console.log('Updating user with ID:', user.uid);
@@ -361,7 +376,8 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       key={searchResult.id} 
       onSubmit={(e) => { 
         e.preventDefault(); 
-        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput, PolicyEffectiveDateInput, DeductionStatusInput, ActiveInput);       }}
+        updateUser(StatusInput, searchResult.id, CaseNotesInput, LMInput, CurrentTotalPremiumInput, unionInput, spouseInput, StartDateInput, LastNameInput, ChangeDateInput, PolicyEffectiveDateInput, DeductionStatusInput, ActiveInput,       CurrentNYDeductionInput // Add this parameter to include Current NY Deduction
+        );       }}
       style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}
     >
 <div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
@@ -538,15 +554,15 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             onChange={(e) => setPreviousTotalPremiumInput((e.target as HTMLInputElement).value)}
           />
         </TextField.Label>
-     
         <TextField.Label>
-  Current NY Deduction
-  <TextField.Input
-    className={'max-w-sm'}
-    value={searchResult.premium_date && searchResult.premium_date.length > 0 ? searchResult.premium_date.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].premium : 'No premium history'}
-    readOnly
-  />
-</TextField.Label>
+    Current NY Deduction
+    <TextField.Input
+      className={'max-w-sm'}
+      value={CurrentNYDeductionInput}
+      onChange={(e) => setCurrentNYDeductionInput((e.target as HTMLInputElement).value)}
+    />
+  </TextField.Label>
+
 <TextField.Label>
           Policy Effective Date
           <TextField.Input
@@ -682,7 +698,8 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
             ChangeDateInput,
             PolicyEffectiveDateInput,
             DeductionStatusInput,
-            ActiveInput
+            ActiveInput,
+            CurrentNYDeductionInput
           );
         }}
         className="space-y-4"

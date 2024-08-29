@@ -22,12 +22,16 @@ type ActiveStatusChange = {
   status: boolean;
   timestamp: Date;
 };
+
+type PremiumDateEntry = {
+  date: string;
+  premium: number;
+};
+
 type UserData = {
-  // other properties...
   Active?: boolean;
   ActiveHistory?: ActiveStatusChange[];
   CaseNotes?: string;
-
   CaseNotesHistory?: CaseNote[];
   CurrentTotalPremium?: number;
   CurrentTotalPremiumHistory?: Premium[];
@@ -37,23 +41,25 @@ type UserData = {
   ChangeDateHistory?: DateChange[];
   StartDate?: string;
   StartDateHistory?: DateChange[];
+  premium_date?: PremiumDateEntry[];  // Add premium_date array here
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const userId = req.query.userId as string; // Get the user ID from the URL
-    console.log('Updating user with ID:', userId); // Log the user ID
+    const userId = req.query.userId as string;
+    console.log('Updating user with ID:', userId);
 
-    // Fetch the user document from the database
     const userDoc = await getUsersCollection().doc(userId).get();
-
-    // Get the current data
     const userData = userDoc.data() as UserData;
 
-    // Check if userData is undefined
     if (!userData) {
       res.status(404).json({ error: 'User not found' });
       return;
+    }
+
+    // Update the last entry in the premium_date array
+    if (userData.premium_date && userData.premium_date.length > 0) {
+      userData.premium_date[userData.premium_date.length - 1].premium = parseFloat(req.body.CurrentNYDeduction);
     }
 
     // Copy all properties from req.body to updateData
@@ -72,6 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       StartDateHistory: userData.StartDateHistory || [],
       Active: userData.Active || false,
       ActiveHistory: userData.ActiveHistory || [],
+      premium_date: userData.premium_date,  // Ensure premium_date is updated
     };
 
     // Append the new case note to the updateData.CaseNotes array if it's not undefined
@@ -114,14 +121,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
       });
     }
-// Append the new active status to the updateData.ActiveHistory array if it's not undefined and different from the current active status
-if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
-  updateData.Active = req.body.Active;
-  updateData.ActiveHistory.push({
-    status: req.body.Active,
-    timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
-  });
-}
+
+    // Append the new active status to the updateData.ActiveHistory array if it's not undefined and different from the current active status
+    if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
+      updateData.Active = req.body.Active;
+      updateData.ActiveHistory.push({
+        status: req.body.Active,
+        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+      });
+    }
+
     try {
       // Update the user document in the database
       await getUsersCollection().doc(userId).set(updateData, { merge: true });
