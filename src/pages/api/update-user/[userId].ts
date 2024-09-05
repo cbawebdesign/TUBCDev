@@ -22,12 +22,16 @@ type ActiveStatusChange = {
   status: boolean;
   timestamp: Date;
 };
+
+type PremiumDateEntry = {
+  date: string;
+  premium: number;
+};
+
 type UserData = {
-  // other properties...
   Active?: boolean;
   ActiveHistory?: ActiveStatusChange[];
   CaseNotes?: string;
-
   CaseNotesHistory?: CaseNote[];
   CurrentTotalPremium?: number;
   CurrentTotalPremiumHistory?: Premium[];
@@ -37,24 +41,35 @@ type UserData = {
   ChangeDateHistory?: DateChange[];
   StartDate?: string;
   StartDateHistory?: DateChange[];
+  premium_date?: PremiumDateEntry[];  // Add premium_date array here
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const userId = req.query.userId as string; // Get the user ID from the URL
-    console.log('Updating user with ID:', userId); // Log the user ID
+    const userId = req.query.userId as string;
+    console.log('Updating user with ID:', userId);
 
-    // Fetch the user document from the database
     const userDoc = await getUsersCollection().doc(userId).get();
-
-    // Get the current data
     const userData = userDoc.data() as UserData;
 
-    // Check if userData is undefined
     if (!userData) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
+
+    // Ensure premium_date is initialized as an array if it's missing
+    if (!userData.premium_date) {
+      userData.premium_date = [];
+    }
+
+    // Get the current date in "YYYY-MM-DD" format
+    const currentDate = new Date().toISOString().slice(0, 10);
+
+    // Add a new entry to the premium_date array with today's date and the new premium value
+    userData.premium_date.push({
+      date: currentDate,
+      premium: parseFloat(req.body.CurrentNYDeduction),  // Convert deduction to number
+    });
 
     // Copy all properties from req.body to updateData
     const updateData = {
@@ -72,14 +87,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       StartDateHistory: userData.StartDateHistory || [],
       Active: userData.Active || false,
       ActiveHistory: userData.ActiveHistory || [],
+      premium_date: userData.premium_date,  // Ensure premium_date is updated with the new entry
     };
 
-    // Append the new case note to the updateData.CaseNotes array if it's not undefined
+    // Append the new case note to the updateData.CaseNotes array if necessary
     if (req.body.CaseNotes !== undefined && req.body.CaseNotes !== "" && req.body.CaseNotes !== updateData.CaseNotes) {
       updateData.CaseNotes = req.body.CaseNotes;
       updateData.CaseNotesHistory.push({
         note: req.body.CaseNotes,
-        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+        timestamp: currentDate,  // Use the same formatted date
       });
     }
 
@@ -87,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.CurrentTotalPremium = req.body.CurrentTotalPremium;
       updateData.CurrentTotalPremiumHistory.push({
         amount: req.body.CurrentTotalPremium,
-        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+        timestamp: currentDate,  // Use the same formatted date
       });
     }
 
@@ -95,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.PolicyEffectiveDate = req.body.PolicyEffectiveDate;
       updateData.PolicyEffectiveDateHistory.push({
         date: req.body.PolicyEffectiveDate,
-        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+        timestamp: currentDate,  // Use the same formatted date
       });
     }
 
@@ -103,7 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.ChangeDate = req.body.ChangeDate;
       updateData.ChangeDateHistory.push({
         date: req.body.ChangeDate,
-        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+        timestamp: currentDate,  // Use the same formatted date
       });
     }
 
@@ -111,19 +127,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.StartDate = req.body.StartDate;
       updateData.StartDateHistory.push({
         date: req.body.StartDate,
-        timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
+        timestamp: currentDate,  // Use the same formatted date
       });
     }
-// Append the new active status to the updateData.ActiveHistory array if it's not undefined and different from the current active status
-if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
-  updateData.Active = req.body.Active;
-  updateData.ActiveHistory.push({
-    status: req.body.Active,
-    timestamp: new Date().toISOString().slice(0, 10) // Format the date as "YYYY-MM-DD"
-  });
-}
+
+    // Append the new active status to the updateData.ActiveHistory array if necessary
+    if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
+      updateData.Active = req.body.Active;
+      updateData.ActiveHistory.push({
+        status: req.body.Active,
+        timestamp: currentDate,  // Use the same formatted date
+      });
+    }
+
     try {
-      // Update the user document in the database
+      // Log the updateData to check the structure
+      console.log('Saving updateData to Firestore:', updateData);
+
+      // Save the update to Firestore
       await getUsersCollection().doc(userId).set(updateData, { merge: true });
 
       res.status(200).json({ message: 'User updated successfully' });
