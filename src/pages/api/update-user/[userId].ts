@@ -41,7 +41,7 @@ type UserData = {
   ChangeDateHistory?: DateChange[];
   StartDate?: string;
   StartDateHistory?: DateChange[];
-  premium_date?: PremiumDateEntry[];  // Add premium_date array here
+  premium_date?: PremiumDateEntry[];
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Append the new premium entry to the premium_date array
     userData.premium_date.push(newPremiumEntry);
 
-    // Construct the updateData by copying values from userData and req.body
+    // Ensure all necessary fields are initialized
     const updateData: UserData = {
       ...userData,
       CaseNotes: userData.CaseNotes || "",
@@ -92,6 +92,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       premium_date: [...userData.premium_date],  // Ensure premium_date is updated with the new entry
     };
 
+    // Ensure CaseNotesHistory is initialized
+    if (!updateData.CaseNotesHistory) {
+      updateData.CaseNotesHistory = [];
+    }
+
     // Append the new case note to the updateData.CaseNotes array if necessary
     if (req.body.CaseNotes !== undefined && req.body.CaseNotes !== "" && req.body.CaseNotes !== updateData.CaseNotes) {
       updateData.CaseNotes = req.body.CaseNotes;
@@ -99,6 +104,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         note: req.body.CaseNotes,
         timestamp: new Date(),  // Use the current date and time
       });
+    }
+
+    // Ensure CurrentTotalPremiumHistory is initialized
+    if (!updateData.CurrentTotalPremiumHistory) {
+      updateData.CurrentTotalPremiumHistory = [];
     }
 
     if (req.body.CurrentTotalPremium !== undefined && req.body.CurrentTotalPremium !== 0 && req.body.CurrentTotalPremium !== updateData.CurrentTotalPremium) {
@@ -109,12 +119,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Ensure PolicyEffectiveDateHistory is initialized
+    if (!updateData.PolicyEffectiveDateHistory) {
+      updateData.PolicyEffectiveDateHistory = [];
+    }
+
     if (req.body.PolicyEffectiveDate !== undefined && req.body.PolicyEffectiveDate !== "" && req.body.PolicyEffectiveDate !== updateData.PolicyEffectiveDate) {
       updateData.PolicyEffectiveDate = req.body.PolicyEffectiveDate;
       updateData.PolicyEffectiveDateHistory.push({
         date: req.body.PolicyEffectiveDate,
         timestamp: new Date(),  // Use the current date and time
       });
+    }
+
+    // Ensure ChangeDateHistory is initialized
+    if (!updateData.ChangeDateHistory) {
+      updateData.ChangeDateHistory = [];
     }
 
     if (req.body.ChangeDate !== undefined && req.body.ChangeDate !== "" && req.body.ChangeDate !== updateData.ChangeDate) {
@@ -125,8 +145,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // Ensure StartDateHistory is initialized
+    if (!updateData.StartDateHistory) {
+      updateData.StartDateHistory = [];
+    }
+
     if (req.body.StartDate !== undefined && req.body.StartDate !== "" && req.body.StartDate !== updateData.StartDate) {
       updateData.StartDate = req.body.StartDate;
       updateData.StartDateHistory.push({
         date: req.body.StartDate,
-        timestamp: new Date
+        timestamp: new Date(),  // Use the current date and time
+      });
+    }
+
+    // Ensure ActiveHistory is initialized
+    if (!updateData.ActiveHistory) {
+      updateData.ActiveHistory = [];
+    }
+
+    // Append the new active status to the updateData.ActiveHistory array if necessary
+    if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
+      updateData.Active = req.body.Active;
+      updateData.ActiveHistory.push({
+        status: req.body.Active,
+        timestamp: new Date(),  // Use the current date and time
+      });
+    }
+
+    try {
+      // Log the updateData to check the structure
+      console.log('Saving updateData to Firestore:', updateData);
+
+      // Save the update to Firestore
+      await getUsersCollection().doc(userId).set(updateData, { merge: true });
+
+      res.status(200).json({ message: 'User updated successfully' });
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  } else {
+    res.status(405).end('Method Not Allowed');
+  }
+}
