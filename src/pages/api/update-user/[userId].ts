@@ -66,15 +66,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const currentDate = new Date().toISOString().slice(0, 10);
 
     // Add a new entry to the premium_date array with today's date and the new premium value
-    userData.premium_date.push({
+    const newPremiumEntry = {
       date: currentDate,
       premium: parseFloat(req.body.CurrentNYDeduction),  // Convert deduction to number
-    });
+    };
 
-    // Copy all properties from req.body to updateData
-    const updateData = {
+    // Append the new premium entry to the premium_date array
+    userData.premium_date.push(newPremiumEntry);
+
+    // Construct the updateData by copying values from userData and req.body
+    const updateData: UserData = {
       ...userData,
-      ...req.body,
       CaseNotes: userData.CaseNotes || "",
       CaseNotesHistory: userData.CaseNotesHistory || [],
       CurrentTotalPremium: userData.CurrentTotalPremium || 0,
@@ -87,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       StartDateHistory: userData.StartDateHistory || [],
       Active: userData.Active || false,
       ActiveHistory: userData.ActiveHistory || [],
-      premium_date: userData.premium_date,  // Ensure premium_date is updated with the new entry
+      premium_date: [...userData.premium_date],  // Ensure premium_date is updated with the new entry
     };
 
     // Append the new case note to the updateData.CaseNotes array if necessary
@@ -95,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.CaseNotes = req.body.CaseNotes;
       updateData.CaseNotesHistory.push({
         note: req.body.CaseNotes,
-        timestamp: currentDate,  // Use the same formatted date
+        timestamp: new Date(),  // Use the current date and time
       });
     }
 
@@ -103,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.CurrentTotalPremium = req.body.CurrentTotalPremium;
       updateData.CurrentTotalPremiumHistory.push({
         amount: req.body.CurrentTotalPremium,
-        timestamp: currentDate,  // Use the same formatted date
+        timestamp: new Date(),  // Use the current date and time
       });
     }
 
@@ -111,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.PolicyEffectiveDate = req.body.PolicyEffectiveDate;
       updateData.PolicyEffectiveDateHistory.push({
         date: req.body.PolicyEffectiveDate,
-        timestamp: currentDate,  // Use the same formatted date
+        timestamp: new Date(),  // Use the current date and time
       });
     }
 
@@ -119,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.ChangeDate = req.body.ChangeDate;
       updateData.ChangeDateHistory.push({
         date: req.body.ChangeDate,
-        timestamp: currentDate,  // Use the same formatted date
+        timestamp: new Date(),  // Use the current date and time
       });
     }
 
@@ -127,32 +129,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.StartDate = req.body.StartDate;
       updateData.StartDateHistory.push({
         date: req.body.StartDate,
-        timestamp: currentDate,  // Use the same formatted date
-      });
-    }
-
-    // Append the new active status to the updateData.ActiveHistory array if necessary
-    if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
-      updateData.Active = req.body.Active;
-      updateData.ActiveHistory.push({
-        status: req.body.Active,
-        timestamp: currentDate,  // Use the same formatted date
-      });
-    }
-
-    try {
-      // Log the updateData to check the structure
-      console.log('Saving updateData to Firestore:', updateData);
-
-      // Save the update to Firestore
-      await getUsersCollection().doc(userId).set(updateData, { merge: true });
-
-      res.status(200).json({ message: 'User updated successfully' });
-    } catch (error) {
-      console.error('Error updating user:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  } else {
-    res.status(405).end('Method Not Allowed');
-  }
-}
+        timestamp: new Date
