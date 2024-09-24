@@ -65,16 +65,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get the current date in "YYYY-MM-DD" format
     const currentDate = new Date().toISOString().slice(0, 10);
 
-    // Add a new entry to the premium_date array with today's date and the new premium value
-    const newPremiumEntry = {
-      date: currentDate,
-      premium: parseFloat(req.body.CurrentNYDeduction),  // Convert deduction to number
-    };
+    // Add or update the entry for the premium_date array for the current date
+    const currentPremium = parseFloat(req.body.CurrentNYDeduction);  // Convert deduction to number
 
-    // Append the new premium entry to the premium_date array
-    userData.premium_date.push(newPremiumEntry);
+    // Check if there's already an entry for today's date in premium_date
+    const existingPremiumEntryIndex = userData.premium_date.findIndex(entry => entry.date === currentDate);
 
-    // Ensure all necessary fields are initialized
+    if (existingPremiumEntryIndex !== -1) {
+      // If an entry exists, update the premium for that date
+      userData.premium_date[existingPremiumEntryIndex].premium = currentPremium;
+    } else {
+      // If no entry exists for today, add a new one
+      userData.premium_date.push({
+        date: currentDate,
+        premium: currentPremium,
+      });
+    }
+
+    // Construct the updateData by copying values from userData and req.body
     const updateData: UserData = {
       ...userData,
       CaseNotes: userData.CaseNotes || "",
