@@ -105,14 +105,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.CaseNotesHistory = [];
     }
 
-    // Append the new case note to the updateData.CaseNotes array if necessary
-    if (req.body.CaseNotes !== undefined && req.body.CaseNotes !== "" && req.body.CaseNotes !== updateData.CaseNotes) {
-      updateData.CaseNotes = req.body.CaseNotes;
-      updateData.CaseNotesHistory.push({
-        note: req.body.CaseNotes,
-        timestamp: new Date(),  // Use the current date and time
-      });
-    }
+   // Append the new case note to the CaseNotesHistory array if necessary
+if (req.body.CaseNotes && req.body.CaseNotes !== updateData.CaseNotes) {
+  updateData.CaseNotes = req.body.CaseNotes;
+  
+  const currentTimestamp = new Date();
+  if (isNaN(currentTimestamp.getTime())) {
+    console.error('Invalid Date:', currentTimestamp);
+    res.status(400).json({ error: 'Invalid timestamp generated' });
+    return;
+  }
+
+  updateData.CaseNotesHistory.push({
+    note: req.body.CaseNotes,
+    timestamp: currentTimestamp, // Proper date handling
+  });
+}
 
     // Ensure CurrentTotalPremiumHistory is initialized
     if (!updateData.CurrentTotalPremiumHistory) {
