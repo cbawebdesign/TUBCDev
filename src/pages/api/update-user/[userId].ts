@@ -1,26 +1,25 @@
-// pages/api/update-user/[userId].ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUsersCollection } from 'src/lib/server/collections';
+import { firestore } from 'firebase-admin'; // Ensure firebase-admin is installed
 
 type CaseNote = {
   note: string;
-  timestamp: Date;
+  timestamp: firestore.Timestamp; // Firestore Timestamp
 };
 
 type Premium = {
   amount: number;
-  timestamp: Date;
+  timestamp: firestore.Timestamp;
 };
 
 type DateChange = {
   date: string;
-  timestamp: Date;
+  timestamp: firestore.Timestamp;
 };
 
 type ActiveStatusChange = {
   status: boolean;
-  timestamp: Date;
+  timestamp: firestore.Timestamp;
 };
 
 type PremiumDateEntry = {
@@ -57,144 +56,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
-    // Ensure premium_date is initialized as an array if it's missing
-    if (!userData.premium_date) {
-      userData.premium_date = [];
-    }
+    userData.premium_date = userData.premium_date || [];
 
-    // Get the current date in "YYYY-MM-DD" format
     const currentDate = new Date().toISOString().slice(0, 10);
+    const currentPremium = parseFloat(req.body.CurrentNYDeduction || '0');
 
-    // Add or update the entry for the premium_date array for the current date
-    const currentPremium = parseFloat(req.body.CurrentNYDeduction);  // Convert deduction to number
+    const existingEntryIndex = userData.premium_date.findIndex(
+      entry => entry.date === currentDate
+    );
 
-    // Check if there's already an entry for today's date in premium_date
-    const existingPremiumEntryIndex = userData.premium_date.findIndex(entry => entry.date === currentDate);
-
-    if (existingPremiumEntryIndex !== -1) {
-      // If an entry exists, update the premium for that date
-      userData.premium_date[existingPremiumEntryIndex].premium = currentPremium;
+    if (existingEntryIndex !== -1) {
+      userData.premium_date[existingEntryIndex].premium = currentPremium;
     } else {
-      // If no entry exists for today, add a new one
-      userData.premium_date.push({
-        date: currentDate,
-        premium: currentPremium,
-      });
+      userData.premium_date.push({ date: currentDate, premium: currentPremium });
     }
 
-    // Construct the updateData by copying values from userData and req.body
     const updateData: UserData = {
       ...userData,
-      CaseNotes: userData.CaseNotes || "",
+      CaseNotes: userData.CaseNotes || '',
       CaseNotesHistory: userData.CaseNotesHistory || [],
       CurrentTotalPremium: userData.CurrentTotalPremium || 0,
       CurrentTotalPremiumHistory: userData.CurrentTotalPremiumHistory || [],
-      PolicyEffectiveDate: userData.PolicyEffectiveDate || "",
+      PolicyEffectiveDate: userData.PolicyEffectiveDate || '',
       PolicyEffectiveDateHistory: userData.PolicyEffectiveDateHistory || [],
-      ChangeDate: userData.ChangeDate || "",
+      ChangeDate: userData.ChangeDate || '',
       ChangeDateHistory: userData.ChangeDateHistory || [],
-      StartDate: userData.StartDate || "",
+      StartDate: userData.StartDate || '',
       StartDateHistory: userData.StartDateHistory || [],
       Active: userData.Active || false,
       ActiveHistory: userData.ActiveHistory || [],
-      premium_date: [...userData.premium_date],  // Ensure premium_date is updated with the new entry
+      premium_date: [...userData.premium_date],
     };
 
-    // Ensure CaseNotesHistory is initialized
-    if (!updateData.CaseNotesHistory) {
-      updateData.CaseNotesHistory = [];
-    }
+    // Append a new case note if needed
+    if (req.body.CaseNotes && req.body.CaseNotes !== updateData.CaseNotes) {
+      updateData.CaseNotes = req.body.CaseNotes;
 
-   // Append the new case note to the CaseNotesHistory array if necessary
-if (req.body.CaseNotes && req.body.CaseNotes !== updateData.CaseNotes) {
-  updateData.CaseNotes = req.body.CaseNotes;
-  
-  const currentTimestamp = new Date();
-  if (isNaN(currentTimestamp.getTime())) {
-    console.error('Invalid Date:', currentTimestamp);
-    res.status(400).json({ error: 'Invalid timestamp generated' });
-    return;
-  }
+      const rawTimestamp = req.body.timestamp || firestore.Timestamp.now();
+      const parsedTimestamp = parseFirestoreTimestamp(rawTimestamp);
 
-  updateData.CaseNotesHistory.push({
-    note: req.body.CaseNotes,
-    timestamp: currentTimestamp, // Proper date handling
-  });
-}
-
-    // Ensure CurrentTotalPremiumHistory is initialized
-    if (!updateData.CurrentTotalPremiumHistory) {
-      updateData.CurrentTotalPremiumHistory = [];
-    }
-
-    if (req.body.CurrentTotalPremium !== undefined && req.body.CurrentTotalPremium !== 0 && req.body.CurrentTotalPremium !== updateData.CurrentTotalPremium) {
-      updateData.CurrentTotalPremium = req.body.CurrentTotalPremium;
-      updateData.CurrentTotalPremiumHistory.push({
-        amount: req.body.CurrentTotalPremium,
-        timestamp: new Date(),  // Use the current date and time
-      });
-    }
-
-    // Ensure PolicyEffectiveDateHistory is initialized
-    if (!updateData.PolicyEffectiveDateHistory) {
-      updateData.PolicyEffectiveDateHistory = [];
-    }
-
-    if (req.body.PolicyEffectiveDate !== undefined && req.body.PolicyEffectiveDate !== "" && req.body.PolicyEffectiveDate !== updateData.PolicyEffectiveDate) {
-      updateData.PolicyEffectiveDate = req.body.PolicyEffectiveDate;
-      updateData.PolicyEffectiveDateHistory.push({
-        date: req.body.PolicyEffectiveDate,
-        timestamp: new Date(),  // Use the current date and time
-      });
-    }
-
-    // Ensure ChangeDateHistory is initialized
-    if (!updateData.ChangeDateHistory) {
-      updateData.ChangeDateHistory = [];
-    }
-
-    if (req.body.ChangeDate !== undefined && req.body.ChangeDate !== "" && req.body.ChangeDate !== updateData.ChangeDate) {
-      updateData.ChangeDate = req.body.ChangeDate;
-      updateData.ChangeDateHistory.push({
-        date: req.body.ChangeDate,
-        timestamp: new Date(),  // Use the current date and time
-      });
-    }
-
-    // Ensure StartDateHistory is initialized
-    if (!updateData.StartDateHistory) {
-      updateData.StartDateHistory = [];
-    }
-
-    if (req.body.StartDate !== undefined && req.body.StartDate !== "" && req.body.StartDate !== updateData.StartDate) {
-      updateData.StartDate = req.body.StartDate;
-      updateData.StartDateHistory.push({
-        date: req.body.StartDate,
-        timestamp: new Date(),  // Use the current date and time
-      });
-    }
-
-    // Ensure ActiveHistory is initialized
-    if (!updateData.ActiveHistory) {
-      updateData.ActiveHistory = [];
-    }
-
-    // Append the new active status to the updateData.ActiveHistory array if necessary
-    if (req.body.Active !== undefined && req.body.Active !== updateData.Active) {
-      updateData.Active = req.body.Active;
-      updateData.ActiveHistory.push({
-        status: req.body.Active,
-        timestamp: new Date(),  // Use the current date and time
+      updateData.CaseNotesHistory!.push({
+        note: req.body.CaseNotes,
+        timestamp: parsedTimestamp,
       });
     }
 
     try {
-      // Log the updateData to check the structure
       console.log('Saving updateData to Firestore:', updateData);
-
-      // Save the update to Firestore
       await getUsersCollection().doc(userId).set(updateData, { merge: true });
-
       res.status(200).json({ message: 'User updated successfully' });
     } catch (error) {
       console.error('Error updating user:', error);
@@ -203,4 +112,20 @@ if (req.body.CaseNotes && req.body.CaseNotes !== updateData.CaseNotes) {
   } else {
     res.status(405).end('Method Not Allowed');
   }
+}
+
+// Helper function to parse Firestore Timestamps
+function parseFirestoreTimestamp(
+  timestamp: firestore.Timestamp | string | Date
+): firestore.Timestamp {
+  if (timestamp instanceof firestore.Timestamp) {
+    return timestamp;
+  }
+  if (typeof timestamp === 'string') {
+    const date = new Date(timestamp);
+    if (!isNaN(date.getTime())) {
+      return firestore.Timestamp.fromDate(date);
+    }
+  }
+  return firestore.Timestamp.now(); // Fallback to current timestamp
 }
