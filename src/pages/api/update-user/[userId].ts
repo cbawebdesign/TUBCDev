@@ -114,18 +114,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-// Helper function to parse Firestore Timestamps
+// Helper function to handle Firestore Timestamps correctly
 function parseFirestoreTimestamp(
-  timestamp: firestore.Timestamp | string | Date
+  timestamp: any
 ): firestore.Timestamp {
   if (timestamp instanceof firestore.Timestamp) {
     return timestamp;
   }
-  if (typeof timestamp === 'string') {
+
+  if (typeof timestamp === 'string' || timestamp instanceof Date) {
     const date = new Date(timestamp);
     if (!isNaN(date.getTime())) {
       return firestore.Timestamp.fromDate(date);
     }
   }
-  return firestore.Timestamp.now(); // Fallback to current timestamp
+
+  console.warn('Invalid timestamp, defaulting to now.');
+  return firestore.Timestamp.now();
 }
