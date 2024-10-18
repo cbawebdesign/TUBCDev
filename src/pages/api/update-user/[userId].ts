@@ -1,4 +1,4 @@
-// pages/api/update-user/[userId].ts
+pages/api/update-user/[userId].ts
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getUsersCollection } from 'src/lib/server/collections';
