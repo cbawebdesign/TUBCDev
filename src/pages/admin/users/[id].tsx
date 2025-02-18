@@ -624,7 +624,12 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <TextField.Label>
         <textarea // Change TextField.Input to textarea
           className={'w-full'}
-          value={`Date: ${new Date((note.timestamp instanceof firebase.firestore.Timestamp ? note.timestamp.seconds : 0) * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })}, Note: ${note.note}`}
+          value={`Date: ${ 
+            // Check if note.timestamp is a string or a Firestore Timestamp
+            note.timestamp && typeof note.timestamp === 'string' 
+              ? new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' })
+              : new Date((note.timestamp as firebase.firestore.Timestamp).seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })
+          }, Note: ${note.note}`}
           readOnly
           style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
         />
