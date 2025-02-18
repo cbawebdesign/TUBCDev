@@ -636,6 +636,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     </button>
   )}
 </div>
+</div>
   <div className="w-full lg:w-64">
     <h2 className="text-2xl font-bold mb-4">Change Date History</h2>
     {searchResult.ChangeDateHistory && searchResult.ChangeDateHistory.slice(0, showAllChangeDates ? searchResult.ChangeDateHistory.length : 1).map((changeDate, index) => (
