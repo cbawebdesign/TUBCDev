@@ -1,6 +1,5 @@
 import { getAuth, UserRecord } from 'firebase-admin/auth';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
+
 import { Timestamp } from 'firebase/firestore';
 
 import { GetServerSidePropsContext } from 'next';
@@ -639,6 +638,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     backgroundColor: 'transparent', // Set background color to transparent
   }}
 />
+
       </TextField.Label>
     </div>
   ))}
