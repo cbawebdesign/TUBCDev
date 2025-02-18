@@ -1,6 +1,6 @@
 import { getAuth, UserRecord } from 'firebase-admin/auth';
-import firebase from 'firebase/app'; // Ensure you have Firebase import
-import { Timestamp } from 'firebase/firestore';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -623,17 +623,21 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
   {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
     <div key={index} className="mb-5 w-full">
       <TextField.Label>
-        <textarea // Change TextField.Input to textarea
-          className={'w-full'}
-          value={`Date: ${ 
-            // Check if note.timestamp is a string or a Firestore Timestamp
-            note.timestamp && typeof note.timestamp === 'string' 
-              ? new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' })
-              : new Date((note.timestamp as firebase.firestore.Timestamp).seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })
-          }, Note: ${note.note}`}
-          readOnly
-          style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
-        />
+      <textarea
+  className={'w-full'}
+  value={`Date: ${
+    note.timestamp && note.timestamp.seconds // Checking if it's a Firestore timestamp
+      ? new Date(note.timestamp.seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' }) // Convert Firestore timestamp to local date
+      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's already a date string, just use it
+  }, Note: ${note.note}`}
+  readOnly
+  style={{
+    height: '100px',
+    width: '120%',
+    whiteSpace: 'pre-wrap',
+    backgroundColor: 'transparent', // Set background color to transparent
+  }}
+/>
       </TextField.Label>
     </div>
   ))}
