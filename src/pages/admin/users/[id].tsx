@@ -625,24 +625,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <TextField.Label>
       <textarea
   className={'w-full'}
-  value={`Date: ${
-    note.timestamp && typeof note.timestamp === 'string' // Check if timestamp is a string
-      ? (() => {
-          // Parse the string to a Date at midnight UTC
-          const firestoreDate = new Date(note.timestamp + 'T00:00:00Z'); // Treat it as UTC midnight
-
-          // Convert to the America/New_York timezone
-          const localDateString = firestoreDate.toLocaleString('en-US', { timeZone: 'America/New_York' });
-
-          // Log the steps for debugging
-          console.log('Firestore Date:', note.timestamp);
-          console.log('Parsed Date (UTC midnight):', firestoreDate.toISOString());
-          console.log('Local Date after Time Zone Conversion:', localDateString);
-
-          return localDateString; // Return the final local date
-        })()
-      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' })
-  }, Note: ${note.note}`}
+  value={`Date: ${note.timestamp || 'No timestamp'}, Note: ${note.note}`}
   readOnly
   style={{
     height: '100px',
