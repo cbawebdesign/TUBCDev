@@ -1,4 +1,5 @@
 import { getAuth, UserRecord } from 'firebase-admin/auth';
+import firebase from 'firebase/app'; // Ensure you have Firebase import
 
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -623,7 +624,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <TextField.Label>
         <textarea // Change TextField.Input to textarea
           className={'w-full'}
-          value={`Date: ${new Date(note.timestamp.seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })}, Note: ${note.note}`}
+          value={`Date: ${new Date((note.timestamp instanceof firebase.firestore.Timestamp ? note.timestamp.seconds : 0) * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })}, Note: ${note.note}`}
           readOnly
           style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
         />
