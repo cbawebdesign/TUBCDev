@@ -626,21 +626,22 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <textarea
   className={'w-full'}
   value={`Date: ${
-    note.timestamp && typeof note.timestamp === 'string' // Check if it's a string
+    note.timestamp && typeof note.timestamp === 'string' // Check if timestamp is a string
       ? (() => {
-          // Parse the string into a Date object
-          const firestoreDate = new Date(note.timestamp);
-          
-          // Log the parsed date to debug
-          console.log('Parsed Firestore Date:', firestoreDate.toISOString());
+          // Convert the string date ("2025-02-18") to a Date object at midnight UTC
+          const firestoreDate = new Date(note.timestamp + 'T00:00:00Z'); // Adding 'T00:00:00Z' to make it midnight UTC
 
-          // Get the local time zone adjusted date string
+          // Convert to the America/New_York timezone
           const localDateString = firestoreDate.toLocaleString('en-US', { timeZone: 'America/New_York' });
 
-          console.log('Local Date after Time Zone Conversion:', localDateString); // Log the final local date
-          return localDateString;
+          // Log for debugging
+          console.log('Firestore Date:', note.timestamp);
+          console.log('Parsed Date:', firestoreDate.toISOString());
+          console.log('Local Date after Time Zone Conversion:', localDateString);
+
+          return localDateString; // Return the converted local date
         })()
-      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's a Date object, just use it
+      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' })
   }, Note: ${note.note}`}
   readOnly
   style={{
@@ -650,7 +651,6 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     backgroundColor: 'transparent', // Set background color to transparent
   }}
 />
-
       </TextField.Label>
     </div>
   ))}
