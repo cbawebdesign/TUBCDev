@@ -1,6 +1,7 @@
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -626,7 +627,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <textarea
   className={'w-full'}
   value={`Date: ${
-    note.timestamp && note.timestamp.seconds // Checking if it's a Firestore timestamp
+    note.timestamp && note.timestamp instanceof Timestamp // Check if it's an instance of Firestore Timestamp
       ? new Date(note.timestamp.seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' }) // Convert Firestore timestamp to local date
       : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's already a date string, just use it
   }, Note: ${note.note}`}
