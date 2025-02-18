@@ -626,17 +626,21 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <textarea
   className={'w-full'}
   value={`Date: ${
-    note.timestamp &&
-    typeof note.timestamp === 'object' &&
-    'seconds' in note.timestamp // Check if it's a Firebase Timestamp
+    note.timestamp && typeof note.timestamp === 'string' // Check if it's a string
       ? (() => {
-          // Convert Firestore timestamp to date with proper time zone conversion
-          const firestoreDate = new Date((note.timestamp as Timestamp).seconds * 1000);
-          console.log('Firestore Date:', firestoreDate.toISOString()); // Debug the timestamp in ISO format
+          // Parse the string into a Date object
+          const firestoreDate = new Date(note.timestamp);
           
-          return firestoreDate.toLocaleString('en-US', { timeZone: 'America/New_York' });
+          // Log the parsed date to debug
+          console.log('Parsed Firestore Date:', firestoreDate.toISOString());
+
+          // Get the local time zone adjusted date string
+          const localDateString = firestoreDate.toLocaleString('en-US', { timeZone: 'America/New_York' });
+
+          console.log('Local Date after Time Zone Conversion:', localDateString); // Log the final local date
+          return localDateString;
         })()
-      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's already a date string, just use it
+      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's a Date object, just use it
   }, Note: ${note.note}`}
   readOnly
   style={{
