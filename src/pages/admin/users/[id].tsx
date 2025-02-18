@@ -626,9 +626,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <textarea
   className={'w-full'}
   value={`Date: ${
-    note.timestamp && note.timestamp instanceof Timestamp // Check if it's an instance of Firestore Timestamp
-      ? new Date(note.timestamp.seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' }) // Convert Firestore timestamp to local date
-      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's already a date string, just use it
+    note.timestamp && note.timestamp.seconds // Explicitly check if 'seconds' exists, indicating it's a Timestamp
+      ? new Date((note.timestamp as Timestamp).seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's a Timestamp, convert it
+      : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' }) // If it's already a date string, use it directly
   }, Note: ${note.note}`}
   readOnly
   style={{
