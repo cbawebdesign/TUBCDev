@@ -617,25 +617,24 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     )}
   </div>
   <div className="w-full lg:w-64">
-    <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
-    {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
-      <div key={index} className="mb-5 w-full">
-        <TextField.Label>
-          <textarea // Change TextField.Input to textarea
-            className={'w-full'}
-            value={`Date: ${new Date(note.timestamp).toLocaleDateString()}, Note: ${note.note}`}
-            readOnly
-            style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
-          />
-        </TextField.Label>
-      </div>
-    ))}
-    {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.length > 1 && (
-      <button onClick={() => setShowAllNotes(!showAllNotes)}>
-        {showAllNotes ? 'Show Less' : 'Show More'}
-      </button>
-    )}
-  </div>
+  <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
+  {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
+    <div key={index} className="mb-5 w-full">
+      <TextField.Label>
+        <textarea // Change TextField.Input to textarea
+          className={'w-full'}
+          value={`Date: ${new Date(note.timestamp.seconds * 1000).toLocaleString('en-US', { timeZone: 'America/New_York' })}, Note: ${note.note}`}
+          readOnly
+          style={{ height: '100px', width: '120%', whiteSpace: 'pre-wrap', backgroundColor: 'transparent' }} // Set backgroundColor to transparent
+        />
+      </TextField.Label>
+    </div>
+  ))}
+  {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.length > 1 && (
+    <button onClick={() => setShowAllNotes(!showAllNotes)}>
+      {showAllNotes ? 'Show Less' : 'Show More'}
+    </button>
+  )}
 </div>
   <div className="w-full lg:w-64">
     <h2 className="text-2xl font-bold mb-4">Change Date History</h2>
