@@ -628,18 +628,18 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
   value={`Date: ${
     note.timestamp && typeof note.timestamp === 'string' // Check if timestamp is a string
       ? (() => {
-          // Convert the string date ("2025-02-18") to a Date object at midnight UTC
-          const firestoreDate = new Date(note.timestamp + 'T00:00:00Z'); // Adding 'T00:00:00Z' to make it midnight UTC
+          // Parse the string to a Date at midnight UTC
+          const firestoreDate = new Date(note.timestamp + 'T00:00:00Z'); // Treat it as UTC midnight
 
           // Convert to the America/New_York timezone
           const localDateString = firestoreDate.toLocaleString('en-US', { timeZone: 'America/New_York' });
 
-          // Log for debugging
+          // Log the steps for debugging
           console.log('Firestore Date:', note.timestamp);
-          console.log('Parsed Date:', firestoreDate.toISOString());
+          console.log('Parsed Date (UTC midnight):', firestoreDate.toISOString());
           console.log('Local Date after Time Zone Conversion:', localDateString);
 
-          return localDateString; // Return the converted local date
+          return localDateString; // Return the final local date
         })()
       : new Date(note.timestamp).toLocaleString('en-US', { timeZone: 'America/New_York' })
   }, Note: ${note.note}`}
