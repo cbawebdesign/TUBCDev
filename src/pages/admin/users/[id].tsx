@@ -1,5 +1,6 @@
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import firebase from 'firebase/app'; // Ensure you have Firebase import
+import { Timestamp } from 'firebase/firestore';
 
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
