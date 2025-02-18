@@ -600,24 +600,25 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
     )}
   </div>
   <div className="w-full lg:w-64">
-    <h2 className="text-2xl font-bold mb-4">CTP History</h2>
-    {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.slice(0, showAll ? searchResult.CurrentTotalPremiumHistory.length : 1).map((premium, index) => (
+  <h2 className="text-2xl font-bold mb-4">CTP History</h2>
+  {searchResult.CurrentTotalPremiumHistory &&
+    searchResult.CurrentTotalPremiumHistory.slice(0, showAll ? searchResult.CurrentTotalPremiumHistory.length : 1).map((premium, index) => (
       <div key={index} className="mb-5 w-full">
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${new Date(premium.timestamp).toLocaleDateString()}, Premium: ${premium.amount}`}
+            value={`Date: ${premium.timestamp || 'No timestamp'}, Premium: ${premium.amount}`}
             readOnly
           />
         </TextField.Label>
       </div>
     ))}
-    {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.length > 1 && (
-      <button onClick={() => setShowAll(!showAll)}>
-        {showAll ? 'Show Less' : 'Show More'}
-      </button>
-    )}
-  </div>
+  {searchResult.CurrentTotalPremiumHistory && searchResult.CurrentTotalPremiumHistory.length > 1 && (
+    <button onClick={() => setShowAll(!showAll)}>
+      {showAll ? 'Show Less' : 'Show More'}
+    </button>
+  )}
+</div>
   <div className="w-full lg:w-64">
   <h2 className="text-2xl font-bold mb-4">Case Notes History</h2>
   {searchResult.CaseNotesHistory && searchResult.CaseNotesHistory.slice(0, showAllNotes ? searchResult.CaseNotesHistory.length : 1).map((note, index) => (
