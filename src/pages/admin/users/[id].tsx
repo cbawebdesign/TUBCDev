@@ -607,8 +607,12 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${premium.timestamp ? new Date(premium.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' }) : 'No timestamp'}, Premium: ${premium.amount}`}            readOnly
-          />
+
+            value={`Date: ${premium.timestamp
+              ? (premium.timestamp.includes('T')
+                  ? new Date(premium.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' })
+                  : new Date(premium.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' }))
+              : 'No timestamp'}, Premium: ${premium.amount}`}          />
         </TextField.Label>
       </div>
     ))}
