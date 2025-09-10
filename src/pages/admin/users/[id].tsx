@@ -607,7 +607,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${premium.timestamp || 'No timestamp'}, Premium: ${premium.amount}`}
+            value={`Date: ${premium.timestamp ? new Date(premium.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) : 'No timestamp'}, Premium: ${premium.amount}`}
             readOnly
           />
         </TextField.Label>
@@ -626,7 +626,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <TextField.Label>
       <textarea
   className={'w-full'}
-  value={`Date: ${note.timestamp || 'No timestamp'}, Note: ${note.note}`}
+  value={`Date: ${note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) : 'No timestamp'}, Note: ${note.note}`}
   readOnly
   style={{
     height: '100px',
@@ -652,7 +652,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${new Date(changeDate.timestamp).toLocaleDateString()}, Change Date: ${changeDate.date}`}
+            value={`Date: ${new Date(changeDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Change Date: ${changeDate.date}`}
             readOnly
           />
         </TextField.Label>
@@ -671,7 +671,7 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${new Date(startDate.timestamp).toLocaleDateString()}, Start Date: ${startDate.date}`}
+            value={`Date: ${new Date(startDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Start Date: ${startDate.date}`}
             readOnly
           />
         </TextField.Label>
