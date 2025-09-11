@@ -587,8 +587,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${premiumDate.date}, Premium: ${premiumDate.premium}`}
-            readOnly
+            value={`Date: ${premiumDate.date.includes('T') 
+            ? new Date(premiumDate.date).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) 
+            : new Date(premiumDate.date + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Premium: ${premiumDate.premium}`}            readOnly
           />
         </TextField.Label>
       </div>
@@ -608,27 +609,13 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
           <TextField.Input
             className={'w-full'}
 
-            value={`Date: ${premium.timestamp
-              ? (premium.timestamp.includes('T')
-                  ? new Date(premium.timestamp).toLocaleString('en-US', {
-                      timeZone: 'America/New_York',
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
-                    })
-                  : new Date(premium.timestamp + "T00:00:00").toLocaleString('en-US', {
-                      timeZone: 'America/New_York',
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
-                    }))
-              : 'No timestamp'}, Premium: ${premium.amount}`}/>
+            value={`Date: ${premium.timestamp 
+              ? (premium.timestamp.includes('T') 
+                  ? new Date(premium.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) 
+                  : new Date(premium.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' })) 
+              : 'No timestamp'}, Premium: ${premium.amount}`}>
+                
+              </TextField.Input>
         </TextField.Label>
       </div>
     ))}
@@ -645,8 +632,11 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
       <TextField.Label>
       <textarea
   className={'w-full'}
-  value={`Date: ${note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) : 'No timestamp'}, Note: ${note.note}`}
-  readOnly
+  value={`Date: ${note.timestamp 
+    ? (note.timestamp.includes('T') 
+        ? new Date(note.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) 
+        : new Date(note.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' })) 
+    : 'No timestamp'}, Note: ${note.note}`}  readOnly
   style={{
     height: '100px',
     width: '120%',
@@ -671,8 +661,9 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${new Date(changeDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Change Date: ${changeDate.date}`}
-            readOnly
+            value={`Date: ${changeDate.timestamp.includes('T') 
+            ? new Date(changeDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) 
+            : new Date(changeDate.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Change Date: ${changeDate.date}`}            readOnly
           />
         </TextField.Label>
       </div>
@@ -690,8 +681,10 @@ const [DeductionStatusInput, setDeductionStatusInput] = useState('');
         <TextField.Label>
           <TextField.Input
             className={'w-full'}
-            value={`Date: ${new Date(startDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Start Date: ${startDate.date}`}
-            readOnly
+            value={`Date: ${startDate.timestamp.includes('T') 
+            ? new Date(startDate.timestamp).toLocaleDateString('en-US', { timeZone: 'America/New_York' }) 
+            : new Date(startDate.timestamp + "T00:00:00").toLocaleDateString('en-US', { timeZone: 'America/New_York' })}, Start Date: ${startDate.date}`}
+                      readOnly
           />
         </TextField.Label>
       </div>
